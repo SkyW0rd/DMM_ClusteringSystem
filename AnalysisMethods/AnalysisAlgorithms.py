@@ -13,20 +13,36 @@ def converter_to_c(points, labels) -> List:
     @brief Преобразует список точек и меток в список кластеров.
 
     Параметры:
-        points (List): Список точек данных.
-        labels (List): Список меток кластеров для каждой точки.
+    points (List): Список точек данных.
+    labels (List): Список меток кластеров для каждой точки.
 
     Возвращает:
-        List: Список кластеров, где каждый кластер содержит свои точки.
+    List: Список кластеров, где каждый кластер содержит свои точки.
+
+    ИСПРАВЛЕНИЕ: Теперь корректно обрабатывает любые значения меток,
+    включая отрицательные (шум) и с пропусками в нумерации.
     """
-    C = []  # count=len(set(labels)) np.float # При создании С=[[]]*len(set(labels))
-            # мы фактически получаем ссылки на некий объект [] len(set(labels)) раз
-            # и при добавлении нового элемента в массив С, он будет во всех подмассивах.
-    b = []
-    for _ in range(len(set(labels))):
-        C.append(b[:])  # Не глубокое копирование
+    # Преобразуем в numpy для удобства
+    labels = np.array(labels)
+    points = np.array(points)
+
+    # Находим уникальные метки (включая шум/выбросы)
+    unique_labels = np.unique(labels)
+
+    # Создаем словарь для сопоставления меток с индексами
+    label_to_index = {label: idx for idx, label in enumerate(unique_labels)}
+
+    # Создаем список кластеров
+    C = [[] for _ in range(len(unique_labels))]
+
+    # Распределяем точки по кластерам
     for index, label in enumerate(labels):
-        C[label].append(points[index])
+        cluster_idx = label_to_index[label]
+        C[cluster_idx].append(points[index])
+
+    # Преобразуем списки в numpy массивы для удобства
+    C = [np.array(cluster) if len(cluster) > 0 else np.array([]) for cluster in C]
+
     return C
 
 #------------------------------------------------------------#
@@ -65,16 +81,22 @@ def MaxIntraCluster(C, i):
     Возвращает:
         float: Максимальное внутрикластерное расстояние.
     """    
-    maxd = 0
+    if len(C[i]) <= 1:
+        return 0
 
-    for i1 in C[i]:
-        for j1 in C[i]:
-            if j1 != i1:
-                # Расстояние, ВСТАВЬТЕ МЕТРИКУ!
-                temp = distance.euclidean(i1, j1)
-                if temp > maxd:
-                    maxd = temp
-    return (maxd)
+    maxd = 0
+    points = C[i]
+    n_points = len(points)
+
+    # Сравниваем только уникальные пары по индексам
+    for idx1 in range(n_points):
+        for idx2 in range(idx1 + 1, n_points):
+            i1 = points[idx1]
+            j1 = points[idx2]
+            temp = distance.euclidean(i1, j1)
+            if temp > maxd:
+                maxd = temp
+    return maxd
 
 
 def DunnIndex(C):
