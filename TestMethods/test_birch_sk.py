@@ -1,13 +1,6 @@
 """
-Тестовый скрипт для проверки [YourAlgorithm] с визуализацией
-Автор: Левинский Григорий levinskiy@mirea.ru
-
-ИНСТРУКЦИЯ ПО ИСПОЛЬЗОВАНИЮ:
-1. Скопируйте этот файл: test_template.py -> test_your_algorithm.py
-2. Замените все "YourAlgorithm" на название вашего алгоритма
-3. Настройте параметры в разделе импортов и тестовых функций
-4. Замените "youralgorithm" на ID вашего алгоритма в StrategiesManager
-5. Запустите: python TestMethods/test_your_algorithm.py
+Тестовый скрипт для проверки BIRCH (SKLearn) с визуализацией
+Автор: Данила Антонович sidorov.d.a1@edu.mirea.ru и Виктор Бредихин vibread@mail.ru
 """
 
 import os
@@ -21,11 +14,11 @@ from sklearn.datasets import make_blobs, make_moons, make_circles
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-ALGORITHM_NAME = "YourAlgorithm"
+ALGORITHM_NAME = "BIRCH_SKLearn"
 
 try:
     from ClusteringMethods.ClasteringAlgorithms import (
-        ConcreteStrategyYourAlgorithm,
+        ConcreteStrategyBIRCH_from_SKLEARN_LEARN,
         Context,
         StrategiesManager
     )
@@ -45,48 +38,20 @@ print(f"📁 Директория для результатов: {IMAGES_DIR}")
 print("="*80 + "\n")
 
 def generate_test_data_2d(dataset_type='blobs', n_samples=300, **kwargs):
-    """
-    Генерация данных для [YourAlgorithm].
-    """
     np.random.seed(kwargs.get('random_state', 42))
-    
     if dataset_type == 'blobs':
-        X, y_true = make_blobs(
-            n_samples=n_samples,
-            n_features=2,
-            centers=kwargs.get('centers', 3),
-            cluster_std=kwargs.get('cluster_std', 0.5),
-            random_state=kwargs.get('random_state', 42)
-        )
+        X, y_true = make_blobs(n_samples=n_samples, n_features=2, centers=kwargs.get('centers', 3),
+                               cluster_std=kwargs.get('cluster_std', 0.5), random_state=kwargs.get('random_state', 42))
     elif dataset_type == 'moons':
-        X, y_true = make_moons(
-            n_samples=n_samples,
-            noise=kwargs.get('noise', 0.05),
-            random_state=kwargs.get('random_state', 42)
-        )
+        X, y_true = make_moons(n_samples=n_samples, noise=kwargs.get('noise', 0.05), random_state=kwargs.get('random_state', 42))
     elif dataset_type == 'circles':
-        X, y_true = make_circles(
-            n_samples=n_samples,
-            noise=kwargs.get('noise', 0.05),
-            factor=kwargs.get('factor', 0.5),
-            random_state=kwargs.get('random_state', 42)
-        )
+        X, y_true = make_circles(n_samples=n_samples, noise=kwargs.get('noise', 0.05), factor=kwargs.get('factor', 0.5), random_state=kwargs.get('random_state', 42))
     else:
         raise ValueError(f"Unknown dataset type: {dataset_type}")
-    
     return X, y_true
 
 def generate_test_data_3d(n_samples=300, n_clusters=3, cluster_std=0.5):
-    """
-    Генерация данных для [YourAlgorithm].
-    """
-    X, y_true = make_blobs(
-        n_samples=n_samples,
-        n_features=3,
-        centers=n_clusters,
-        cluster_std=cluster_std,
-        random_state=42
-    )
+    X, y_true = make_blobs(n_samples=n_samples, n_features=3, centers=n_clusters, cluster_std=cluster_std, random_state=42)
     return X, y_true
 
 def save_figure(fig, filename, dpi=150):
@@ -102,25 +67,15 @@ def test_basic_2d_clustering():
         print("❌ Алгоритм не доступен. Пропускаем тест.")
         return
     X, y_true = generate_test_data_2d('blobs', n_samples=300, centers=3, cluster_std=0.5)
-    
-    # ЗАМЕНИТЕ "youralgorithm" на ID вашего алгоритма в StrategiesManager
-    config = StrategiesManager.getStrategyRunConfigById("youralgorithm")
-    # ЗАМЕНИТЕ на параметры вашего алгоритма
-    # config["parameter1"] = value1
-    # config["parameter2"] = value2
-    
-    strategy = ConcreteStrategyYourAlgorithm()
+    config = StrategiesManager.getStrategyRunConfigById("birch_sk")
+    config["n_clusters"] = 3
+    strategy = ConcreteStrategyBIRCH_from_SKLEARN_LEARN()
     y_pred = strategy.clastering_points(X, config)
-    n_clusters_pred = len(np.unique(y_pred[y_pred != -1]))  # -1 обычно означает шум, измените если нужно
+    n_clusters_pred = len(np.unique(y_pred))
     n_clusters_true = len(np.unique(y_true))
-    n_noise = np.sum(y_pred == -1)  # Измените метку шума если нужно
-    
     print(f"Количество точек: {len(X)}")
     print(f"Истинное количество кластеров: {n_clusters_true}")
     print(f"Найдено кластеров: {n_clusters_pred}")
-    if n_noise > 0:
-        print(f"Шумовых точек: {n_noise}")
-    
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
     scatter1 = axes[0].scatter(X[:, 0], X[:, 1], c=y_true, cmap='viridis', alpha=0.6, s=30, edgecolors='k', linewidth=0.5)
     axes[0].set_title('Истинные Кластеры', fontsize=14, fontweight='bold')
@@ -129,10 +84,7 @@ def test_basic_2d_clustering():
     axes[0].grid(True, alpha=0.3)
     plt.colorbar(scatter1, ax=axes[0], label='Истинная метка')
     scatter2 = axes[1].scatter(X[:, 0], X[:, 1], c=y_pred, cmap='tab10', alpha=0.6, s=30, edgecolors='k', linewidth=0.5)
-    title = f'{ALGORITHM_NAME} Результаты\n({n_clusters_pred} кластеров)'
-    if n_noise > 0:
-        title += f', {n_noise} шум'
-    axes[1].set_title(title, fontsize=14, fontweight='bold')
+    axes[1].set_title(f'{ALGORITHM_NAME} Результаты\n({n_clusters_pred} кластеров)', fontsize=14, fontweight='bold')
     axes[1].set_xlabel('X₁', fontsize=12)
     axes[1].set_ylabel('X₂', fontsize=12)
     axes[1].grid(True, alpha=0.3)
@@ -143,32 +95,27 @@ def test_basic_2d_clustering():
 
 def test_parameter_sensitivity():
     print("="*80)
-    print("ТЕСТ 2: Чувствительность к Параметрам")
+    print("ТЕСТ 2: Чувствительность к Параметрам (n_clusters)")
     print("="*80)
     if not ALGORITHM_AVAILABLE:
         print("❌ Алгоритм не доступен. Пропускаем тест.")
         return
     X, y_true = generate_test_data_2d('blobs', n_samples=300, centers=3)
-    
-    # ЗАМЕНИТЕ на название параметра и значения для тестирования
-    param_name = "parameter"
-    param_values = [0.1, 0.5, 1.0, 2.0]
-    
+    n_clusters_values = [2, 3, 4, 5]
     fig, axes = plt.subplots(2, 2, figsize=(14, 14))
     axes = axes.ravel()
-    for i, param_value in enumerate(param_values):
-        config = StrategiesManager.getStrategyRunConfigById("youralgorithm")
-        config[param_name] = param_value
-        # Добавьте другие параметры если нужно
-        strategy = ConcreteStrategyYourAlgorithm()
+    for i, n_clust in enumerate(n_clusters_values):
+        config = StrategiesManager.getStrategyRunConfigById("birch_sk")
+        config["n_clusters"] = n_clust
+        strategy = ConcreteStrategyBIRCH_from_SKLEARN_LEARN()
         y_pred = strategy.clastering_points(X, config)
-        n_clusters = len(np.unique(y_pred[y_pred != -1]))  # Измените метку шума если нужно
+        n_clusters = len(np.unique(y_pred))
         axes[i].scatter(X[:, 0], X[:, 1], c=y_pred, cmap='tab10', alpha=0.6, s=30, edgecolors='k', linewidth=0.5)
-        axes[i].set_title(f'{param_name}={param_value}\n({n_clusters} кластеров)', fontsize=12, fontweight='bold')
+        axes[i].set_title(f'n_clusters={n_clust}\n({n_clusters} кластеров)', fontsize=12, fontweight='bold')
         axes[i].set_xlabel('X₁')
         axes[i].set_ylabel('X₂')
         axes[i].grid(True, alpha=0.3)
-        print(f"  {param_name}={param_value}: {n_clusters} кластеров")
+        print(f"  n_clusters={n_clust}: {n_clusters} кластеров")
     plt.tight_layout()
     save_figure(fig, 'test_parameters.png')
     print()
@@ -186,11 +133,11 @@ def test_different_datasets():
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
     for i, (name, dataset_type, params) in enumerate(datasets):
         X, _ = generate_test_data_2d(dataset_type, n_samples=300, **params)
-        config = StrategiesManager.getStrategyRunConfigById("youralgorithm")
-        # Настройте параметры для вашего алгоритма
-        strategy = ConcreteStrategyYourAlgorithm()
+        config = StrategiesManager.getStrategyRunConfigById("birch_sk")
+        config["n_clusters"] = 3
+        strategy = ConcreteStrategyBIRCH_from_SKLEARN_LEARN()
         y_pred = strategy.clastering_points(X, config)
-        n_clusters = len(np.unique(y_pred[y_pred != -1]))  # Измените метку шума если нужно
+        n_clusters = len(np.unique(y_pred))
         axes[i].scatter(X[:, 0], X[:, 1], c=y_pred, cmap='tab10', alpha=0.6, s=30, edgecolors='k', linewidth=0.5)
         axes[i].set_title(f'{name}\n({n_clusters} кластеров)', fontsize=12, fontweight='bold')
         axes[i].set_xlabel('X₁')
@@ -209,33 +156,23 @@ def test_3d_clustering():
         print("❌ Алгоритм не доступен. Пропускаем тест.")
         return
     X, y_true = generate_test_data_3d(n_samples=300, n_clusters=3)
-    
-    # Если ваш алгоритм работает только с 2D, используйте проекцию:
-    # X_2d = X[:, :2]
-    # config = StrategiesManager.getStrategyRunConfigById("youralgorithm")
-    # strategy = ConcreteStrategyYourAlgorithm()
-    # y_pred = strategy.clastering_points(X_2d, config)
-    
-    # Если ваш алгоритм поддерживает 3D, используйте напрямую:
-    config = StrategiesManager.getStrategyRunConfigById("youralgorithm")
-    # Настройте параметры
-    strategy = ConcreteStrategyYourAlgorithm()
+    config = StrategiesManager.getStrategyRunConfigById("birch_sk")
+    config["n_clusters"] = 3
+    strategy = ConcreteStrategyBIRCH_from_SKLEARN_LEARN()
     y_pred = strategy.clastering_points(X, config)
-    
-    n_clusters = len(np.unique(y_pred[y_pred != -1]))  # Измените метку шума если нужно
+    n_clusters = len(np.unique(y_pred))
     print(f"Найдено кластеров: {n_clusters}")
-    print(f"Количество признаков: {X.shape[1]} (для визуализации используется 3D проекция)")
     fig = plt.figure(figsize=(16, 6))
     ax1 = fig.add_subplot(1, 3, 1, projection='3d')
     scatter1 = ax1.scatter(X[:, 0], X[:, 1], X[:, 2], c=y_true, cmap='viridis', alpha=0.6, s=30, edgecolors='k', linewidth=0.5)
-    ax1.set_title('3D: Истинные Кластеры\n(3D проекция)', fontsize=12, fontweight='bold')
+    ax1.set_title('3D: Истинные Кластеры', fontsize=12, fontweight='bold')
     ax1.set_xlabel('X₁')
     ax1.set_ylabel('X₂')
     ax1.set_zlabel('X₃')
     plt.colorbar(scatter1, ax=ax1, shrink=0.5)
     ax2 = fig.add_subplot(1, 3, 2, projection='3d')
     scatter2 = ax2.scatter(X[:, 0], X[:, 1], X[:, 2], c=y_pred, cmap='tab10', alpha=0.6, s=30, edgecolors='k', linewidth=0.5)
-    ax2.set_title(f'3D: {ALGORITHM_NAME}\n({n_clusters} кластеров, 3D проекция)', fontsize=12, fontweight='bold')
+    ax2.set_title(f'3D: {ALGORITHM_NAME}\n({n_clusters} кластеров)', fontsize=12, fontweight='bold')
     ax2.set_xlabel('X₁')
     ax2.set_ylabel('X₂')
     ax2.set_zlabel('X₃')
@@ -260,17 +197,17 @@ def test_strategy_integration():
         return
     X, y_true = generate_test_data_2d('blobs', n_samples=200, centers=2)
     try:
-        config = StrategiesManager.getStrategyRunConfigById("youralgorithm")
-        # Настройте параметры
-        strategy = ConcreteStrategyYourAlgorithm()
+        config = StrategiesManager.getStrategyRunConfigById("birch_sk")
+        config["n_clusters"] = 2
+        strategy = ConcreteStrategyBIRCH_from_SKLEARN_LEARN()
         context = Context(strategy)
         y_pred = context.do_some_clustering_points(X.T, config)
-        n_clusters = len(np.unique(y_pred[y_pred != -1]))  # Измените метку шума если нужно
+        n_clusters = len(np.unique(y_pred))
         print(f"Найдено кластеров: {n_clusters}")
         print("✅ Интеграция с фреймворком работает!")
         fig, ax = plt.subplots(figsize=(8, 6))
         scatter = ax.scatter(X[:, 0], X[:, 1], c=y_pred, cmap='tab10', alpha=0.6, s=30, edgecolors='k', linewidth=0.5)
-        ax.set_title(f'{ALGORITHM_NAME} через Strategy Pattern\n({n_clusters} кластеров, 2D проекция)', fontsize=14, fontweight='bold')
+        ax.set_title(f'{ALGORITHM_NAME} через Strategy Pattern\n({n_clusters} кластеров)', fontsize=14, fontweight='bold')
         ax.set_xlabel('X₁', fontsize=12)
         ax.set_ylabel('X₂', fontsize=12)
         ax.grid(True, alpha=0.3)
@@ -311,3 +248,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
