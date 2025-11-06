@@ -77,7 +77,7 @@ DMM_ClusteringSystem/
 
 ```bash
 # Перейдите в корневую директорию проекта
-cd D:\pycharm\clustering\faze4\DMM_ClusteringSystem
+cd <path_to_your_project>\DMM_ClusteringSystem
 
 # Запустите тест WaveClustering
 python TestMethods/test_wave.py
