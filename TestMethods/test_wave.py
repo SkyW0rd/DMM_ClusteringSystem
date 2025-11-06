@@ -18,7 +18,10 @@ ALGORITHM_NAME = "WaveClustering"
 
 try:
     from ClusteringMethods.WaveClusteringAlgorithm import (
-        ConcreteStrategyWaveClustering,
+        ConcreteStrategyWaveClustering
+    )
+    from ClusteringMethods.ClasteringAlgorithms import (
+        Context,
         StrategiesManager
     )
     ALGORITHM_AVAILABLE = True
