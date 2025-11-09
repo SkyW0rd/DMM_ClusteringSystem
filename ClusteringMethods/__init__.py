@@ -1,5 +1,6 @@
 """
-ClusteringMethods Package
+ClusteringMethods Package - UPDATED with Correct BallTree v2.0
+
 Автоматическая загрузка всех алгоритмов кластеризации
 """
 
@@ -14,8 +15,19 @@ try:
     )
     print("✅ WaveClustering успешно загружен и зарегистрирован!")
 except ImportError as e:
-    print(f"⚠️  WaveClustering не загружен: {e}")
+    print(f"⚠️ WaveClustering не загружен: {e}")
     print("   Убедитесь, что установлены: pip install PyWavelets scipy")
+
+# Импорт BallTree Clustering (ИСПРАВЛЕННАЯ ВЕРСИЯ v2.0)
+try:
+    from ClusteringMethods.BallTreeClustering import (
+        ConcreteStrategyBallTree,
+        BallTreeClustering
+    )
+    print("✅ BallTree Clustering успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️ BallTree Clustering не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install scikit-learn scipy numpy")
 
 # Экспортируем все
 __all__ = [
@@ -23,5 +35,7 @@ __all__ = [
     'StrategiesManager',
     'Context',
     'ConcreteStrategyWaveClustering',
-    'WaveClustering'
+    'WaveClustering',
+    'ConcreteStrategyBallTree',
+    'BallTreeClustering',
 ]
