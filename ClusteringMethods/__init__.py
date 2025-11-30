@@ -1,5 +1,5 @@
 """
-ClusteringMethods Package - UPDATED with Correct BallTree v2.0
+ClusteringMethods Package - UPDATED with VP-Tree Bregman (БЕЗ pyBregman)
 
 Автоматическая загрузка всех алгоритмов кластеризации
 """
@@ -18,7 +18,7 @@ except ImportError as e:
     print(f"⚠️ WaveClustering не загружен: {e}")
     print("   Убедитесь, что установлены: pip install PyWavelets scipy")
 
-# Импорт BallTree Clustering (ИСПРАВЛЕННАЯ ВЕРСИЯ v2.0)
+# Импорт BallTree Clustering
 try:
     from ClusteringMethods.BallTreeClustering import (
         ConcreteStrategyBallTree,
@@ -29,6 +29,19 @@ except ImportError as e:
     print(f"⚠️ BallTree Clustering не загружен: {e}")
     print("   Убедитесь, что установлены: pip install scikit-learn scipy numpy")
 
+# ============================================================================
+# Импорт VP-Tree Bregman Clustering (БЕЗ pyBregman!)
+# ============================================================================
+try:
+    from ClusteringMethods.VPTreeClustering import (
+        ConcreteStrategyVPTreeBregman,
+        VPTreeBregmanClustering
+    )
+    print("✅ VP-Tree Bregman Clustering успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️ VP-Tree Bregman Clustering не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install scipy scikit-learn numpy")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -38,4 +51,6 @@ __all__ = [
     'WaveClustering',
     'ConcreteStrategyBallTree',
     'BallTreeClustering',
+    'ConcreteStrategyVPTreeBregman',
+    'VPTreeBregmanClustering',
 ]
