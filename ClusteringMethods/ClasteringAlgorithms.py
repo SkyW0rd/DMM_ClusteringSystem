@@ -25,6 +25,8 @@ from sklearn.cluster import SpectralClustering
 from sklearn.cluster import OPTICS
 from sklearn.mixture import GaussianMixture 
 
+from sklearn.preprocessing import StandardScaler
+
 from skfuzzy.cluster import cmeans
 
 from typing import Dict, List
@@ -1137,13 +1139,18 @@ class ConcreteStrategySpectralClustering_from_SKLEARN(Strategy):
                       0)
 
     def clastering_image(self, pixels: np.ndarray, params: StrategyRunConfig) -> np.ndarray:
+
+        # Стандартизация данных
+        scaler = StandardScaler()
+        pixel_values_scaled = scaler.fit_transform(pixels)
+
         model = SpectralClustering(n_clusters=params["n_clusters"],
                                      affinity=params["affinity"],
                                      gamma=params["gamma"],
                                      n_neighbors=params["n_neighbors"],
                                      eigen_solver=params["eigen_solver"],
                                      random_state=params["random_state"])
-        labels = model.fit_predict(pixels)
+        labels = model.fit_predict(pixel_values_scaled)
         return labels
 
 
