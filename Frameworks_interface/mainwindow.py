@@ -15,7 +15,10 @@ from PySide6.QtCore import (
     QMargins,
     QSize,
     QPoint,
-    qDebug
+    qDebug,
+    QTimer,
+    QThread,
+    Signal
 )
 from PySide6.QtGui import (
     QAction,
@@ -195,6 +198,88 @@ def loader_settings():
 
 
 '''
+    @brief  Worker класс для выполнения кластеризации в отдельном потоке.
+'''
+
+
+class ClusteringWorker(QThread):
+    # Сигналы для передачи результатов в главный поток
+    finished = Signal(str, dict)  # stratId, результаты
+    error = Signal(str, str)  # stratId, сообщение об ошибке
+    progress = Signal(str)  # сообщение о прогрессе
+
+    def __init__(self, stratId: str, strategy, config: StrategyRunConfig,
+                 clustering_type: str, data=None, pixels=None, image=None, imgType: int = 0):
+        super().__init__()
+        self.stratId = stratId
+        self.strategy = strategy
+        self.config = config
+        self.clustering_type = clustering_type  # 'points' или 'image'
+        # Копируем данные для thread-safety
+        if data is not None:
+            self.data = copy.deepcopy(data) if isinstance(data, list) else data.copy() if hasattr(data, 'copy') else data
+        else:
+            self.data = None
+        if pixels is not None:
+            self.pixels = pixels.copy() if hasattr(pixels, 'copy') else pixels
+        else:
+            self.pixels = None
+        if image is not None:
+            self.image = image.copy() if hasattr(image, 'copy') else image
+        else:
+            self.image = None
+        self.imgType = imgType
+
+    def run(self):
+        """Выполнение кластеризации в отдельном потоке"""
+        try:
+            self.progress.emit(f'Обработка: {StrategiesManager.strategies()[self.stratId].name}...')
+            
+            # Создаем новый контекст для этого потока (thread-safe)
+            context = Context(self.strategy)
+
+            results = {}
+            
+            if self.clustering_type == 'points':
+                # Кластеризация точек
+                tic = time.process_time()
+                labels = context.do_some_clustering_points(self.data, self.config)
+                toc = time.process_time()
+                elapsed = toc - tic
+                
+                results = {
+                    'type': 'points',
+                    'labels': labels,
+                    'elapsed': elapsed,
+                    'data': self.data
+                }
+            else:
+                # Кластеризация изображений
+                tic = time.process_time()
+                labels = context.do_some_clustering_image(
+                    self.pixels, self.config, self.imgType)
+                toc = time.process_time()
+                elapsed = toc - tic
+                
+                clustered_image = labels.reshape(self.image.shape[:2])
+                
+                results = {
+                    'type': 'image',
+                    'labels': labels,
+                    'elapsed': elapsed,
+                    'image': self.image,
+                    'clustered_image': clustered_image
+                }
+
+            # Отправляем результаты в главный поток
+            self.finished.emit(self.stratId, results)
+            
+        except Exception as e:
+            # Отправляем ошибку в главный поток
+            self.error.emit(self.stratId, str(e))
+
+
+'''
     @brief  Основной класс приложения.
 '''
 
@@ -239,6 +324,9 @@ class MainWindow(QMainWindow):
         # Создания явного QCursor т. к. default не так работает как нужно.
         self.cursor1 = QCursor()
         self.setCursor(self.cursor1)
+        # Переменные для асинхронной обработки кластеризации
+        self.__clustering_queue: List[Dict] = []
+        self.__current_worker: ClusteringWorker | None = None
 
     '''
         @brief  Инициализация базового GridLayout.
@@ -1198,8 +1286,6 @@ class MainWindow(QMainWindow):
     def clickStartClustering(self):
         rowCount = self.__algorithm_parameters_table.rowCount()
 
-        context: Context|None = None
-
         # Находим нужные виджеты для определения типа кластеризации
         # TODO: Найти где они создаются и добавить как переменную у класса окна, чтобы вот так не
         #       искать
@@ -1217,7 +1303,14 @@ class MainWindow(QMainWindow):
         frame3: QFrame = grid.parentWidget().findChild(
             QFrame, 'frame3')
 
-        # Перебираем все обнаруженные методы кластеризации
+        # Останавливаем предыдущий worker, если он запущен
+        if self.__current_worker is not None:
+            self.__current_worker.terminate()
+            self.__current_worker.wait()
+            self.__current_worker = None
+
+        # Формируем очередь методов для обработки
+        self.__clustering_queue = []
         for idx in range(rowCount):
             checkBox: QCheckBox = self.__algorithm_parameters_table.cellWidget(idx, 0)
             stratId: str = checkBox.property("__stratId")
@@ -1234,116 +1327,250 @@ class MainWindow(QMainWindow):
                 qDebug(f"Tried to make strategy {stratId}, but it does not exist")
                 continue
 
-            if context is None:
-                context = Context(strat)
-            else:
-                context.strategy = strat
+            # Сохраняем информацию о методе для обработки
+            self.__clustering_queue.append({
+                'stratId': stratId,
+                'strategy': strat,
+                'frame1': frame1,
+                'srb1_fr1': srb1_fr1,
+                'srb2_fr1': srb2_fr1,
+                'frame2': frame2,
+                'rb1_fr2': rb1_fr2,
+                'frame3': frame3
+            })
 
-            # Сгенерировать и кластеризовать данные
-            if rb1_fr2.isChecked(): # Кластеризация точек
-                # Генерация распределений или Генерация изображений 
+        # Если очередь пуста, выходим
+        if not self.__clustering_queue:
+            return
+
+        # Перестраиваем подокна сразу, чтобы они красиво выглядели
+        self._mdiarea.tileSubWindows()
+        
+        # Запускаем обработку первого метода
+        self.statusBar().showMessage('Начало кластеризации...')
+        self.button_start.setEnabled(False)  # Блокируем кнопку во время обработки
+        
+        # Запускаем обработку первого метода
+        self.__processNextClusteringMethod()
+
+    '''
+        @brief  Обработка следующего метода кластеризации из очереди.
+    '''
+
+    def __processNextClusteringMethod(self):
+        if not self.__clustering_queue:
+            # Очередь пуста, завершаем обработку
+            self.__current_worker = None
+            self.button_start.setEnabled(True)
+            self.statusBar().showMessage('Кластеризация успешно завершена!')
+            self._mdiarea.tileSubWindows()
+            return
+
+        # Берем первый метод из очереди
+        method_info = self.__clustering_queue.pop(0)
+        stratId = method_info['stratId']
+        strat = method_info['strategy']
+        rb1_fr2 = method_info['rb1_fr2']
+        srb1_fr1 = method_info['srb1_fr1']
+        srb2_fr1 = method_info['srb2_fr1']
+        frame3 = method_info['frame3']
+
+        # Обновляем статус
+        strategy_name = StrategiesManager.strategies()[stratId].name
+        self.statusBar().showMessage(f'Обработка: {strategy_name}...')
+
+        # Подготавливаем данные для worker'а
+        try:
+            if rb1_fr2.isChecked():  # Кластеризация точек
                 if srb2_fr1.isChecked() or srb1_fr1.isChecked():
-                    Data: List[List[float]] | List[float] = self.property('Data')  # Получение данных
-
-                    # Подокно с результатми
-                    qmv: QMdiSubWindow = self._mdiarea.findChild(QMdiSubWindow, "sub_" + stratId)
-                    qmv.setVisible(True)
-
-                    # Вычисляем
-                    tic = time.process_time()
-                    labels = context.do_some_clustering_points(
-                        Data, self.__strategiesConfigs[stratId])
-                    toc = time.process_time()
-                    elapsed = toc - tic
-
-                    # Отображаем полученные данные
-                    spl: QSpliter = qmv.layout().itemAt(1).widget()
-                    qmvv: QMainWindow = spl.layoutContentArea().itemAt(0).widget()
-                    tw: QTableWidget = qmvv.findChild(QTableWidget, 'stw')
-                    tw.setItem(0, 1, QTableWidgetItem(str(elapsed)))
-                    C = converter_to_c(
-                        np.array(Data).transpose().tolist(), labels)
-                    dunn = DunnIndex(C)
-                    tw.setItem(1, 1, QTableWidgetItem(str(dunn)))
-                    dunnMean = DunnIndexMean(C)
-                    tw.setItem(2, 1, QTableWidgetItem(str(dunnMean)))
-
-                    subWinBody: QWidget = self._mdiarea.findChild(QWidget, 'sub_' + stratId + '_cnv')
-                    cnv11: FigureCanvasQTAgg = subWinBody \
-                        .layout().itemAtPosition(1, 0).widget().findChild(QDockWidget, 'dw1') \
-                        .widget().layout().itemAtPosition(0, 0).widget()
-                    qmv1 = subWinBody.layout().itemAtPosition(1, 1).widget()
-                    cnv12: FigureCanvasQTAgg = qmv1.findChild(QDockWidget, 'dw2') \
-                        .widget().layout().itemAtPosition(0, 0).widget()
-                    cnv11.figure.clear()
-                    cnv11.figure.add_subplot(1, 1, 1)
-                    cnv11.figure.axes[0].scatter(Data[0], Data[1], c=labels,
-                                                    # c=scatter.cmap(0.7) # jet
-                                                    cmap="rainbow")
-                    cnv11.draw()
-                    qmv1.setVisible(True)
-                    cnv12.figure.clear()
-                    cnv12.figure.add_subplot(projection="3d")
-                    cnv12.figure.axes[0].scatter(
-                        Data[0], Data[1], Data[2], c=labels, cmap="rainbow")
-                    cnv12.draw()
-
-            else: # Кластеризация изображений
+                    Data: List[List[float]] | List[float] = self.property('Data')
+                    
+                    # Создаем worker для кластеризации точек
+                    worker = ClusteringWorker(
+                        stratId=stratId,
+                        strategy=strat,
+                        config=self.__strategiesConfigs[stratId],
+                        clustering_type='points',
+                        data=Data
+                    )
+                else:
+                    # Пропускаем этот метод
+                    QTimer.singleShot(10, self.__processNextClusteringMethod)
+                    return
+            else:  # Кластеризация изображений
                 acb1_fr3: QComboBox = frame3.findChild(QComboBox, 'acb1_fr3')
                 le1_fr2: QLineEdit = self.widget1.findChild(QLineEdit, 'le1_fr2')
                 image_path = le1_fr2.text()
 
+                if not image_path:
+                    # Пропускаем этот метод, если путь к изображению не указан
+                    QTimer.singleShot(10, self.__processNextClusteringMethod)
+                    return
+
                 imgType = acb1_fr3.currentIndex()
                 if imgType > 0:
                     image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+                else:
+                    image = None
 
                 match imgType:
-                    # Преобразуем пиксели фотографии в преобразуемые данные
                     case 0:  # None
-                        image = Image.open(image_path)
-                        image = np.array(image)
+                        if image is None:
+                            try:
+                                image = Image.open(image_path)
+                                image = np.array(image)
+                            except Exception:
+                                # Пропускаем этот метод при ошибке загрузки
+                                QTimer.singleShot(10, self.__processNextClusteringMethod)
+                                return
                         pixels = image.reshape((-1, 3))
                     case 1:  # HSV
+                        if image is None:
+                            QTimer.singleShot(10, self.__processNextClusteringMethod)
+                            return
                         pixels = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
                     case 2:  # HLS
+                        if image is None:
+                            QTimer.singleShot(10, self.__processNextClusteringMethod)
+                            return
                         pixels = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
                     case 3:  # YUV
+                        if image is None:
+                            QTimer.singleShot(10, self.__processNextClusteringMethod)
+                            return
                         pixels = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
                     case _:
-                        continue
+                        # Пропускаем этот метод
+                        QTimer.singleShot(10, self.__processNextClusteringMethod)
+                        return
+                
+                # ОПТИМИЗАЦИЯ: Уменьшаем разрешение изображения для ускорения кластеризации
+                # Сохраняем оригинальный размер для восстановления результата
+                original_shape = image.shape[:2]
+                original_pixels_count = len(pixels)
+                
+                # Максимальное количество пикселей для быстрой обработки
+                MAX_PIXELS_FOR_CLUSTERING = 50000  # ~224x224 пикселей
+                
+                if original_pixels_count > MAX_PIXELS_FOR_CLUSTERING:
+                    # Вычисляем коэффициент масштабирования
+                    scale_factor = np.sqrt(MAX_PIXELS_FOR_CLUSTERING / original_pixels_count)
+                    new_height = int(image.shape[0] * scale_factor)
+                    new_width = int(image.shape[1] * scale_factor)
+                    
+                    # Уменьшаем изображение
+                    if imgType > 0:
+                        # Для OpenCV изображений
+                        resized_image = cv2.resize(image, (new_width, new_height), 
+                                                  interpolation=cv2.INTER_AREA)
+                        # Пересчитываем пиксели для уменьшенного изображения
+                        match imgType:
+                            case 1:  # HSV
+                                pixels = cv2.cvtColor(resized_image, cv2.COLOR_BGR2HSV)
+                            case 2:  # HLS
+                                pixels = cv2.cvtColor(resized_image, cv2.COLOR_BGR2HLS)
+                            case 3:  # YUV
+                                pixels = cv2.cvtColor(resized_image, cv2.COLOR_BGR2YUV)
+                        image = resized_image  # Обновляем image для отображения
+                    else:
+                        # Для PIL изображений
+                        resized_image = Image.fromarray(image).resize(
+                            (new_width, new_height), Image.Resampling.LANCZOS)
+                        resized_image = np.array(resized_image)
+                        pixels = resized_image.reshape((-1, 3))
+                        image = resized_image  # Обновляем image для отображения
+                    
+                    print(f"⚡ Изображение уменьшено: {original_shape} → {image.shape[:2]} "
+                          f"({original_pixels_count} → {len(pixels)} пикселей)")
 
-                # Вычисляем
-                labels = None
+                # Создаем worker для кластеризации изображений
+                worker = ClusteringWorker(
+                    stratId=stratId,
+                    strategy=strat,
+                    config=self.__strategiesConfigs[stratId],
+                    clustering_type='image',
+                    pixels=pixels,
+                    image=image,
+                    imgType=imgType
+                )
 
-                try:
-                    tic = time.process_time()
-                    labels = context.do_some_clustering_image(
-                        pixels, self.__strategiesConfigs[stratId], imgType)
-                    toc = time.process_time()
-                    clustered_image = labels.reshape(image.shape[:2])
-                    elapsed = toc - tic
-                except:
-                    self.statusBar().showMessage(
-                        f'При данных параметрах кластеризация {StrategiesManager.strategies()[stratId].name} не возможна!')
-                    continue
+            # Подключаем сигналы worker'а
+            worker.finished.connect(self.__onClusteringFinished)
+            worker.error.connect(self.__onClusteringError)
+            worker.progress.connect(lambda msg: self.statusBar().showMessage(msg))
+            
+            # Сохраняем ссылку на worker и запускаем его
+            self.__current_worker = worker
+            worker.start()
+            
+        except Exception as e:
+            self.statusBar().showMessage(
+                f'Ошибка при подготовке {strategy_name}: {str(e)}')
+            # Переходим к следующему методу
+            QTimer.singleShot(10, self.__processNextClusteringMethod)
 
-                # Отображаем
+    '''
+        @brief  Обработчик завершения кластеризации (сигнал от worker'а).
+    '''
+
+    def __onClusteringFinished(self, stratId: str, results: dict):
+        try:
+            if results['type'] == 'points':
+                # Отображаем результаты кластеризации точек
+                Data = results['data']
+                labels = results['labels']
+                elapsed = results['elapsed']
+
+                # Подокно с результатами
+                qmv: QMdiSubWindow = self._mdiarea.findChild(QMdiSubWindow, "sub_" + stratId)
+                qmv.setVisible(True)
+
+                # Обновляем таблицу
+                spl: QSpliter = qmv.layout().itemAt(1).widget()
+                qmvv: QMainWindow = spl.layoutContentArea().itemAt(0).widget()
+                tw: QTableWidget = qmvv.findChild(QTableWidget, 'stw')
+                tw.setItem(0, 1, QTableWidgetItem(str(elapsed)))
+                C = converter_to_c(
+                    np.array(Data).transpose().tolist(), labels)
+                dunn = DunnIndex(C)
+                tw.setItem(1, 1, QTableWidgetItem(str(dunn)))
+                dunnMean = DunnIndexMean(C)
+                tw.setItem(2, 1, QTableWidgetItem(str(dunnMean)))
+
+                # Обновляем графики
+                subWinBody: QWidget = self._mdiarea.findChild(QWidget, 'sub_' + stratId + '_cnv')
+                cnv11: FigureCanvasQTAgg = subWinBody \
+                    .layout().itemAtPosition(1, 0).widget().findChild(QDockWidget, 'dw1') \
+                    .widget().layout().itemAtPosition(0, 0).widget()
+                qmv1 = subWinBody.layout().itemAtPosition(1, 1).widget()
+                cnv12: FigureCanvasQTAgg = qmv1.findChild(QDockWidget, 'dw2') \
+                    .widget().layout().itemAtPosition(0, 0).widget()
+                cnv11.figure.clear()
+                cnv11.figure.add_subplot(1, 1, 1)
+                cnv11.figure.axes[0].scatter(Data[0], Data[1], c=labels, cmap="rainbow")
+                cnv11.draw()
+                qmv1.setVisible(True)
+                cnv12.figure.clear()
+                cnv12.figure.add_subplot(projection="3d")
+                cnv12.figure.axes[0].scatter(
+                    Data[0], Data[1], Data[2], c=labels, cmap="rainbow")
+                cnv12.draw()
+
+            else:  # image
+                # Отображаем результаты кластеризации изображений
+                image = results['image']
+                clustered_image = results['clustered_image']
+                elapsed = results['elapsed']
+
+                # Подокно с результатами
                 qmv: QMdiSubWindow = self._mdiarea.findChild(
                     QMdiSubWindow, "sub_" + stratId)
                 spl: QSpliter = qmv.layout().itemAt(1).widget()
                 qmvv: QMainWindow = spl.layoutContentArea().itemAt(0).widget()
                 tw: QTableWidget = qmvv.findChild(QTableWidget, 'stw')
                 tw.setItem(0, 1, QTableWidgetItem(str(elapsed)))
-                # C = converter_to_c(pixels.tolist(), labels)    # Оценка изображений отключена
-                # из-за слишком долгого времени расчета.
-                # dunn = DunnIndex(C) # Медленная
-                # tw.setItem(1, 1, QTableWidgetItem(str(dunn)))
-                # dunnMean = DunnIndexMean(C)
-                # tw.setItem(2, 1, QTableWidgetItem(str(dunnMean)))
-                # dbi = DBi(C, 0, 1, 1, 1)
-                # tw.setItem(3, 1, QTableWidgetItem(str(dbi)))
+                
                 subWinBody = self._mdiarea.findChild(QWidget, "sub_" + stratId + "_cnv")
-
                 cnv11: FigureCanvasQTAgg = subWinBody \
                     .layout().itemAtPosition(1, 0).widget().findChild(QDockWidget, 'dw1') \
                     .widget().layout().itemAtPosition(0, 0).widget()
@@ -1361,9 +1588,33 @@ class MainWindow(QMainWindow):
                 cnv12.figure.axes[0].imshow(clustered_image)
                 cnv12.draw()
 
-            self.statusBar().showMessage('Кластеризация успешно проведена!')
+            strategy_name = StrategiesManager.strategies()[stratId].name
+            self.statusBar().showMessage(f'{strategy_name} завершен!')
+            
+        except Exception as e:
+            self.statusBar().showMessage(
+                f'Ошибка при отображении результатов: {str(e)}')
+        finally:
+            # Очищаем worker и переходим к следующему методу
+            if self.__current_worker is not None:
+                self.__current_worker.deleteLater()
+                self.__current_worker = None
+            QTimer.singleShot(10, self.__processNextClusteringMethod)
+
+    '''
+        @brief  Обработчик ошибки кластеризации (сигнал от worker'а).
+    '''
+
+    def __onClusteringError(self, stratId: str, error_msg: str):
+        strategy_name = StrategiesManager.strategies()[stratId].name
+        self.statusBar().showMessage(
+            f'Ошибка при обработке {strategy_name}: {error_msg}')
         
-        self._mdiarea.tileSubWindows()
+        # Очищаем worker и переходим к следующему методу
+        if self.__current_worker is not None:
+            self.__current_worker.deleteLater()
+            self.__current_worker = None
+        QTimer.singleShot(10, self.__processNextClusteringMethod)
 
     '''
         @brief  Загрузка изображений.
