@@ -387,4 +387,37 @@ cmeans(data,
 **Источник:** [Документация scikit-fuzzy](https://pythonhosted.org/scikit-fuzzy/api/skfuzzy.cluster.html#cmeans)
 
 
+---
 
+### 12. Spectral Clustering
+
+**Установка:**
+```bash
+python -m pip install scikit-learn
+```
+**Импорт:**
+```python
+from sklearn.cluster import SpectralClustering
+```
+
+**Описание метода:**
+Spectral Сlustering —  это метод кластеризации, который использует методы спектральной теории графов для выделения кластеров в данных. 
+
+**Сигнатура:**
+```python
+class sklearn.cluster.SpectralСlustering(
+   n_clusters=3, affinity='rbf', gamma=1.0, n_neighbors=10, eigen_solver=None, random_state=0
+)
+```
+
+**Параметры:**
+- **n_clusters** (*int*, по умолчанию 3): Количество кластеров.
+- **affinity** (*str*, по умолчанию 'rbf'): Функция сходства ('rbf', 'nearest_neighbors', 'precomputed', 'precomputed_nearest_neighbors').
+- **gamma** (*float*, по умолчанию 1.0): Параметр gamma для ядра RBF. Используется, если affinity='rbf'.
+- **n_neighbors** (*int*, по умолчанию 10): Количество соседей для affinity='nearest_neighbors'.
+- **eigen_solver** (*str*, по умолчанию None): Решатель собственных значений ('None','arpack', 'lobpcg', 'amg').
+- **random_state** (*int*, по умолчанию 0): Инициализация генератора случайных чисел..
+
+**Источник:** [Документация scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html)
+
+---
