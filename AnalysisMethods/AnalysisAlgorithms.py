@@ -50,6 +50,7 @@ def converter_to_c(points, labels) -> List:
 def MinInterCluster(C, i, j):
     """
     Вычисляет минимальное расстояние между кластерами i и j.
+    ОПТИМИЗИРОВАНО: Использует векторизацию numpy для ускорения вычислений.
 
     Параметры:
         C (List): Список кластеров.
@@ -59,15 +60,22 @@ def MinInterCluster(C, i, j):
     Возвращает:
         float: Минимальное расстояние между кластерами i и j.
     """
-    mind = 100000
-
-    for i1 in C[i]:
-        for j1 in C[j]:
-            # Расстояние, ВСТАВЬТЕ МЕТРИКУ!
-            temp = distance.euclidean(i1, j1)
-            if temp < mind:
-                mind = temp
-    return (mind)
+    # Преобразуем в numpy массивы для векторизации
+    cluster_i = np.asarray(C[i])
+    cluster_j = np.asarray(C[j])
+    
+    # Если кластеры пустые, возвращаем большое значение
+    if len(cluster_i) == 0 or len(cluster_j) == 0:
+        return 100000.0
+    
+    # Вычисляем все попарные расстояния между кластерами
+    # Используем broadcasting для эффективного вычисления
+    # Расстояние между каждой точкой в cluster_i и каждой точкой в cluster_j
+    distances = distance.cdist(cluster_i, cluster_j, metric='euclidean')
+    
+    # Находим минимальное расстояние
+    mind = np.min(distances)
+    return float(mind)
 
 
 def MaxIntraCluster(C, i):
@@ -128,6 +136,7 @@ def DunnIndex(C):
 def MeanInterclusterDistance(C,i,j):
     """
     Вычисляет среднее расстояние между кластерами i и j.
+    ОПТИМИЗИРОВАНО: Использует векторизацию numpy для ускорения вычислений.
 
     Параметры:
         C (List): Список кластеров.
@@ -137,15 +146,20 @@ def MeanInterclusterDistance(C,i,j):
     Возвращает:
         float: Среднее межкластерное расстояние.
     """    
-    #Нормализация
-    normMinter = lambda i,j : 1/( len(C[i]) * len(C[j]))
-    sum = 0
-    for i1 in C[i]:
-        for j1 in C[j]:
-            # Расстояние, ВСТАВЬТЕ МЕТРИКУ!
-            sum += distance.euclidean(i1,j1)
-    MInter = sum * normMinter(i,j)
-    return(MInter)
+    # Преобразуем в numpy массивы для векторизации
+    cluster_i = np.asarray(C[i])
+    cluster_j = np.asarray(C[j])
+    
+    # Если кластеры пустые, возвращаем 0
+    if len(cluster_i) == 0 or len(cluster_j) == 0:
+        return 0.0
+    
+    # Вычисляем все попарные расстояния между кластерами
+    distances = distance.cdist(cluster_i, cluster_j, metric='euclidean')
+    
+    # Вычисляем среднее расстояние
+    MInter = np.mean(distances)
+    return float(MInter)
 
 def DunnIndexMean(C):
     """
@@ -177,6 +191,7 @@ def DunnIndexMean(C):
 def normp(p, u, v):
     """
     Вычисляет норму порядка p между векторами u и v.
+    ОПТИМИЗИРОВАНО: Использует векторизацию numpy для ускорения вычислений.
 
     Параметры:
         p (int): Порядок нормы.
@@ -186,18 +201,20 @@ def normp(p, u, v):
     Возвращает:
         float: Значение нормы.
     """
-    sum = 0
-    for i in range(0, len(u), 1):
-        tempsum = 0
-        tempsum += abs(u[i] - v[i])
-        tempsum = tempsum ** p
-        sum += tempsum
-    return (sum ** (1 / p))
+    # Преобразуем в numpy массивы
+    u = np.asarray(u)
+    v = np.asarray(v)
+    
+    # Вычисляем разность и норму через векторизацию
+    diff = np.abs(u - v)
+    sum_p = np.sum(diff ** p)
+    return float(sum_p ** (1 / p))
 
 
 def Mi(C, i):
     """
     Вычисляет центроид кластера i.
+    ОПТИМИЗИРОВАНО: Использует numpy.mean для ускорения вычислений.
 
     Параметры:
         C (List): Список кластеров.
@@ -206,20 +223,16 @@ def Mi(C, i):
     Возвращает:
         List: Координаты центроида.
     """    
-    # Инициализация
-    mi = []
-    for j1 in range(0, len(C[i][0]), 1):
-        mi.append(0)
-
-    # Поиск средневзешенного центроида i
-    # Сумма координат точек
-    for i1 in C[i]:
-        for j1 in range(0, len(C[i][0]), 1):
-            mi[j1] += i1[j1]
-    # Нормализация
-    for j1 in range(0, len(C[i][0]), 1):
-        mi[j1] /= len(C[i])
-    return (mi)
+    # Преобразуем в numpy массив
+    cluster = np.asarray(C[i])
+    
+    # Если кластер пустой, возвращаем нулевой центроид
+    if len(cluster) == 0:
+        return [0.0] * (len(C[i][0]) if len(C[i]) > 0 else 1)
+    
+    # Вычисляем среднее по каждой координате (центроид)
+    mi = np.mean(cluster, axis=0)
+    return mi.tolist()
 
 
 def IntraclusterSeparation(C, i, p, q):
