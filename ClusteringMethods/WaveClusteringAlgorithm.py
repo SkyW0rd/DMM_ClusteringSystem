@@ -1,6 +1,6 @@
 """
 WaveClustering Algorithm Implementation
-Автор: Григорий Дмитриевич [glevinskiy@gmail.com]
+Автор: Левинский Григорий [glevinskiy@gmail.com]
 Последнее обновление: 2025-10-21
 """
 
@@ -21,18 +21,18 @@ from ClusteringMethods.ClasteringAlgorithms import (
 
 class WaveClustering:
     """
-    WaveClustering algorithm implementation.
+    Реализация алгоритма WaveClustering
 
     Parameters:
     -----------
     n_grid : int, default=32
-        Number of grid divisions per dimension
+        Количество делений сетки на каждое измерение
     wavelet : str, default='haar'
-        Wavelet type ('haar', 'db4', 'coif1', etc.)
+        Тип вейвлета ('haar', 'db4', 'coif1', и т.д.)
     n_levels : int, default=2
-        Number of wavelet transform levels (resolution)
+        Количество уровней вейвлет-преобразования (разрешение)
     density_threshold : float, default=0.1
-        Threshold for detecting dense regions (relative to max density)
+        Порог для обнаружения плотных областей (относительно максимальной плотности)
     """
 
     def __init__(self, n_grid=32, wavelet='haar', n_levels=2, density_threshold=0.1):
@@ -45,19 +45,19 @@ class WaveClustering:
 
     def _quantize_data(self, X: np.ndarray) -> Tuple[np.ndarray, Dict]:
         """
-        Step 1: Quantize feature space into grid cells
+        Шаг 1: Квантование пространства признаков в ячейки сетки
 
         Parameters:
         -----------
         X : array-like, shape (n_samples, n_features)
-            Input data
+            Входные данные
 
         Returns:
         --------
         grid : ndarray
-            Grid with density values
+            Сетка со значениями плотности
         metadata : dict
-            Information about grid bounds and cell sizes
+            Информация о границах сетки и размерах ячеек
         """
         n_samples, n_features = X.shape
 
@@ -106,19 +106,19 @@ class WaveClustering:
 
     def _apply_wavelet_transform(self, grid: np.ndarray, level: int = 1) -> np.ndarray:
         """
-        Step 2: Apply wavelet transform to the grid
+        Шаг 2: Применение вейвлет-преобразования к сетке
 
         Parameters:
         -----------
         grid : ndarray
-            Quantized feature space
+            Квантованное пространство признаков
         level : int
-            Number of decomposition levels
+            Количество уровней декомпозиции
 
         Returns:
         --------
         transformed_grid : ndarray
-            Wavelet-transformed grid (LL subband)
+            Вейвлет-преобразованная сетка (LL поддиапазон)
         """
         if grid.ndim == 2:
             # 2D wavelet transform
@@ -139,21 +139,21 @@ class WaveClustering:
 
     def _find_connected_components(self, grid: np.ndarray, threshold: float) -> Tuple[np.ndarray, int]:
         """
-        Step 3: Find connected components in transformed space
+        Шаг 3: Поиск связных компонент в преобразованном пространстве
 
         Parameters:
         -----------
         grid : ndarray
-            Transformed grid
+            Преобразованная сетка
         threshold : float
-            Density threshold
+            Порог плотности
 
         Returns:
         --------
         labeled_grid : ndarray
-            Grid with cluster labels
+            Сетка с метками кластеров
         n_clusters : int
-            Number of clusters found
+            Количество найденных кластеров
         """
         # Threshold the grid to find dense regions
         dense_mask = grid > threshold
@@ -166,23 +166,23 @@ class WaveClustering:
     def _map_points_to_clusters(self, X: np.ndarray, labeled_grid: np.ndarray,
                                  metadata: Dict, scale_factor: int) -> np.ndarray:
         """
-        Step 4: Map original points to cluster labels
+        Шаг 4: Сопоставление исходных точек с метками кластеров
 
         Parameters:
         -----------
         X : ndarray
-            Original data points
+            Исходные точки данных
         labeled_grid : ndarray
-            Grid with cluster labels from transformed space
+            Сетка с метками кластеров из преобразованного пространства
         metadata : dict
-            Grid metadata
+            Метаданные сетки
         scale_factor : int
-            Scaling factor due to wavelet downsampling
+            Масштабный коэффициент из-за понижающей дискретизации вейвлета
 
         Returns:
         --------
         labels : ndarray
-            Cluster labels for each point
+            Метки кластеров для каждой точки
         """
         n_samples = X.shape[0]
         labels = np.zeros(n_samples, dtype=int)
@@ -207,17 +207,17 @@ class WaveClustering:
 
     def fit(self, X: np.ndarray) -> 'WaveClustering':
         """
-        Perform clustering on X.
+        Выполнение кластеризации на X.
 
         Parameters:
         -----------
         X : array-like, shape (n_samples, n_features)
-            Training instances to cluster
+            Обучающие экземпляры для кластеризации
 
         Returns:
         --------
         self : object
-            Returns the instance itself
+            Возвращает сам экземпляр
         """
         X = np.asarray(X)
 
@@ -256,17 +256,17 @@ class WaveClustering:
 
     def fit_predict(self, X: np.ndarray) -> np.ndarray:
         """
-        Compute clusters and predict cluster index for each sample.
+        Вычисление кластеров и предсказание индекса кластера для каждого образца.
 
         Parameters:
         -----------
         X : array-like, shape (n_samples, n_features)
-            Samples to cluster
+            Образцы для кластеризации
 
         Returns:
         --------
         labels : ndarray, shape (n_samples,)
-            Index of the cluster each sample belongs to
+            Индекс кластера, к которому принадлежит каждый образец
         """
         return self.fit(X).labels_
 
