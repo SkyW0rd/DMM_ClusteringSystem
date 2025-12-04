@@ -168,13 +168,7 @@ class VPTreeBregmanClustering:
         n_samples = X.shape[0]
         distance_matrix = np.zeros((n_samples, n_samples))
 
-        # Вычисляем дивергенцию/расстояние между каждой парой точек
-        print(f"🔄 Вычисление матрицы расстояний ({self.divergence})...")
-
         for i in range(n_samples):
-            if (i + 1) % max(1, n_samples // 10) == 0:
-                print(f"   Прогресс: {i + 1}/{n_samples}")
-
             for j in range(i + 1, n_samples):
                 try:
                     dist = compute_divergence(
@@ -232,7 +226,6 @@ class VPTreeBregmanClustering:
         pairwise_dist = squareform(self.distance_matrix_, checks=False)
 
         # Иерархическая кластеризация
-        print(f"🔄 Иерархическая кластеризация методом {self.linkage_method}...")
         self.linkage_matrix_ = linkage(
             pairwise_dist,
             method=self.linkage_method
@@ -251,8 +244,6 @@ class VPTreeBregmanClustering:
         if self.n_clusters_found_ != self.n_clusters:
             print(f"⚠️ Запрошено {self.n_clusters} кластеров, "
                   f"но получено {self.n_clusters_found_}")
-
-        print(f"✅ Кластеризация завершена: {self.n_clusters_found_} кластеров найдено")
 
         return self
 
