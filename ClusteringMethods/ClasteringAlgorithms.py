@@ -21,6 +21,7 @@ from pyclustering.container.cftree import measurement_type
 from sklearn.cluster import Birch       # pip install sklearn-learn
 from sklearn.cluster import DBSCAN, HDBSCAN
 from sklearn.cluster import SpectralBiclustering
+from sklearn.cluster import SpectralClustering
 from sklearn.cluster import OPTICS
 from sklearn.mixture import GaussianMixture 
 
@@ -1090,3 +1091,68 @@ class ConcreteStrategyFCM(Strategy):
                                         init=None)
         cluster_membership = np.argmax(u, axis=0)
         return cluster_membership
+
+
+@StrategiesManager.registerStrategy("spectral_clustering_sk", "Spectral Clustering (SKLearn)")
+class ConcreteStrategySpectralClustering_from_SKLEARN(Strategy):
+
+    @classmethod
+    def _setupParams(cls):
+        cls._addParam("n_clusters", "Количество кластеров", StrategyParamType.UNumber,
+                      """
+                      Количество кластеров для выделения.
+                      """,
+                      3)
+
+        cls._addParam("affinity", "Функция сходства", StrategyParamType.Switch,
+                      """
+                      Функция сходства: rbf, nearest_neighbors, precomputed, precomputed_nearest_neighbors.
+                      """,
+                      "rbf",
+                      switches=["rbf", "nearest_neighbors", "precomputed", "precomputed_nearest_neighbors"])
+
+        cls._addParam("gamma", "Параметр ядра RBF", StrategyParamType.UNumber,
+                      """
+                      Параметр gamma для ядра RBF. Используется, если affinity='rbf'.
+                      """,
+                      1.0)
+
+        cls._addParam("n_neighbors", "Количество соседей", StrategyParamType.UNumber,
+                      """
+                      Количество соседей для affinity='nearest_neighbors'.
+                      """,
+                      10)
+
+        cls._addParam("eigen_solver", "Решатель собственных значений", StrategyParamType.Switch,
+                      """
+                      Решатель собственных значений: arpack, lobpcg, amg.
+                      """,
+                      None,
+                      switches=["arpack", "lobpcg", "amg", None])
+
+        cls._addParam("random_state", "Состояние случайности", StrategyParamType.UNumber,
+                      """
+                      Инициализация генератора случайных чисел.
+                      """,
+                      0)
+
+    def clastering_image(self, pixels: np.ndarray, params: StrategyRunConfig) -> np.ndarray:
+        model = SpectralClustering(n_clusters=params["n_clusters"],
+                                     affinity=params["affinity"],
+                                     gamma=params["gamma"],
+                                     n_neighbors=params["n_neighbors"],
+                                     eigen_solver=params["eigen_solver"],
+                                     random_state=params["random_state"])
+        labels = model.fit_predict(pixels)
+        return labels
+
+
+    def clastering_points(self, points: np.ndarray, params: StrategyRunConfig) -> np.ndarray:
+        model = SpectralClustering(n_clusters=params["n_clusters"],
+                                     affinity=params["affinity"],
+                                     gamma=params["gamma"],
+                                     n_neighbors=params["n_neighbors"],
+                                     eigen_solver=params["eigen_solver"],
+                                     random_state=params["random_state"])
+        labels = model.fit_predict(points)
+        return labels
