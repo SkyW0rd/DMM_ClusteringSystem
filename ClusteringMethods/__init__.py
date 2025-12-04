@@ -52,17 +52,6 @@ except ImportError as e:
     print(f"⚠️  HPStreamClustering не загружен: {e}")
     print("   Убедитесь, что установлены: pip install numpy scikit-learn")
 
-# Импорт DUCtream Clustering
-try:
-    from ClusteringMethods.DUCtreamClusteringAlgorithm import (
-        ConcreteStrategyDUCtream,
-        DUCtreamClustering
-    )
-    print("✅ DUCtream Clustering успешно загружен и зарегистрирован!")
-except ImportError as e:
-    print(f"⚠️  DUCtream Clustering не загружен: {e}")
-    print("   Убедитесь, что установлены: pip install PyWavelets scipy scikit-learn numpy")
-
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -76,6 +65,4 @@ __all__ = [
     'VPTreeBregmanClustering',
     'ConcreteStrategyHPStream',
     'HPStreamClustering',
-    'ConcreteStrategyDUCtream',
-    'DUCtreamClustering',
 ]
