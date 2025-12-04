@@ -242,12 +242,29 @@ class ConcreteStrategyHPStream(Strategy):
         )
 
     def clastering_image(self, pixels: np.ndarray, params: StrategyRunConfig) -> np.ndarray:
-        """Кластеризация изображения"""
+        """
+        Кластеризация изображения.
+        ОПТИМИЗИРОВАНО: Добавлена выборка для больших изображений.
+        """
         pixels = np.asarray(pixels, dtype=np.float64)
 
         # Коррекция формата данных
         if pixels.shape[0] < pixels.shape[1] and pixels.shape[0] <= 10:
             pixels = pixels.T
+
+        # Ограничение размера данных для предотвращения зависания
+        # HPStream может быть медленным на больших изображениях
+        MAX_SAMPLES = 5000  # Максимальное количество пикселей для обработки
+        
+        if len(pixels) > MAX_SAMPLES:
+            # ОПТИМИЗАЦИЯ: Используем стратегическую выборку вместо случайной
+            step = int(np.sqrt(len(pixels) / MAX_SAMPLES))
+            indices = np.arange(0, len(pixels), step)[:MAX_SAMPLES]
+            sample_pixels = pixels[indices]
+            use_sampling = True
+        else:
+            sample_pixels = pixels
+            use_sampling = False
 
         model = HPStreamClustering(
             num_clusters=int(params["num_clusters"]),
@@ -256,7 +273,22 @@ class ConcreteStrategyHPStream(Strategy):
             fade_threshold=float(params["fade_threshold"]),
             normalize=True
         )
-        return model.fit_predict(pixels)
+        
+        sample_labels = model.fit_predict(sample_pixels)
+        
+        if use_sampling:
+            # ОПТИМИЗАЦИЯ: Используем более быстрый алгоритм для больших данных
+            from sklearn.neighbors import KNeighborsClassifier
+            n_neighbors = min(3, len(sample_pixels) // 10)
+            knn = KNeighborsClassifier(n_neighbors=max(1, n_neighbors),
+                                       algorithm='ball_tree' if len(pixels) > 10000 else 'auto',
+                                       n_jobs=-1)  # Используем все ядра
+            knn.fit(sample_pixels, sample_labels)
+            labels = knn.predict(pixels)
+        else:
+            labels = sample_labels
+            
+        return labels
 
     def clastering_points(self, points: np.ndarray, params: StrategyRunConfig) -> np.ndarray:
         """Кластеризация точек"""

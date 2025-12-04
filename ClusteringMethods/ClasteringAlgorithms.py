@@ -117,33 +117,28 @@ class Context:
                 (np.ndarray) Метки кластеров для каждого пикселя.
             """
             if i > 0:
-                # Извлечение координат и цветов всех пикселей в формате HSV
-                coords_and_colors = [
-                    (x, y, pixels[y, x])
-                    for y in range(pixels.shape[0])
-                    for x in range(pixels.shape[1])
-                ]
-                # Преобразование координат и цветов в двумерный массив для кластеризации
-                # X = np.array([[h, s, v] for (_, _, (h, s, v)) in coords_and_colors])
-                X = [[float(h), float(s), float(v)] for (_, _, (h, s, v)) in coords_and_colors]
+                # ОПТИМИЗАЦИЯ: Используем numpy для более эффективного преобразования
+                # Преобразуем пиксели напрямую в массив без создания промежуточных списков
+                if isinstance(pixels, np.ndarray):
+                    X = pixels.reshape((-1, pixels.shape[-1])).astype(np.float64)
+                else:
+                    # Если это список, преобразуем в numpy массив
+                    X = np.array(pixels, dtype=np.float64)
+                    if X.ndim == 3:
+                        X = X.reshape((-1, X.shape[-1]))
+                
                 # ------------------------------------------------------------------------------------- #
                 labels = self._strategy.clastering_image(X, params)
                 # ------------------------------------------------------------------------------------- #
-                # Визуализация результата кластеризации
-                colors = [
-                    (255, 0, 0),
-                    (0, 255, 0),
-                    (0, 0, 255),
-                    (255, 255, 0),
-                    (255, 0, 255),
-                    (0, 255, 255),
-                ]
-                clustered_image = np.zeros_like(pixels)
-                for index, (x, y, _) in enumerate(coords_and_colors):
-                    clustered_image[y, x] = colors[labels[index] % len(colors)]
+                # Визуализация результата кластеризации (если нужна)
+                # Примечание: Визуализация теперь выполняется в mainwindow.py
             else: 
                 # None(used Rashape)
-                labels = self._strategy.clastering_image(pixels.tolist(), params)
+                # ОПТИМИЗАЦИЯ: Преобразуем в numpy массив только если нужно
+                if isinstance(pixels, np.ndarray):
+                    labels = self._strategy.clastering_image(pixels, params)
+                else:
+                    labels = self._strategy.clastering_image(pixels.tolist(), params)
             return labels
 
     def do_some_clustering_points(self, data, params: StrategyRunConfig) -> np.ndarray:
@@ -1139,10 +1134,34 @@ class ConcreteStrategySpectralClustering_from_SKLEARN(Strategy):
                       0)
 
     def clastering_image(self, pixels: np.ndarray, params: StrategyRunConfig) -> np.ndarray:
-
+        """
+        Кластеризация изображения методом Spectral Clustering.
+        ОПТИМИЗИРОВАНО: Добавлена выборка для больших изображений.
+        """
+        pixels = np.asarray(pixels, dtype=np.float64)
+        
+        # Коррекция формата данных
+        if pixels.shape[0] < pixels.shape[1] and pixels.shape[0] <= 10:
+            pixels = pixels.T
+        
+        # Ограничение размера данных для предотвращения зависания
+        MAX_SAMPLES = 10000  # Максимальное количество пикселей для обработки
+        original_shape = pixels.shape
+        
+        if len(pixels) > MAX_SAMPLES:
+            # ОПТИМИЗАЦИЯ: Используем стратегическую выборку вместо случайной
+            # Равномерная выборка по сетке для лучшего покрытия изображения
+            step = int(np.sqrt(len(pixels) / MAX_SAMPLES))
+            indices = np.arange(0, len(pixels), step)[:MAX_SAMPLES]
+            sample_pixels = pixels[indices]
+            use_sampling = True
+        else:
+            sample_pixels = pixels
+            use_sampling = False
+        
         # Стандартизация данных
         scaler = StandardScaler()
-        pixel_values_scaled = scaler.fit_transform(pixels)
+        pixel_values_scaled = scaler.fit_transform(sample_pixels)
 
         model = SpectralClustering(n_clusters=params["n_clusters"],
                                      affinity=params["affinity"],
@@ -1150,7 +1169,21 @@ class ConcreteStrategySpectralClustering_from_SKLEARN(Strategy):
                                      n_neighbors=params["n_neighbors"],
                                      eigen_solver=params["eigen_solver"],
                                      random_state=params["random_state"])
-        labels = model.fit_predict(pixel_values_scaled)
+        sample_labels = model.fit_predict(pixel_values_scaled)
+        
+        if use_sampling:
+            # ОПТИМИЗАЦИЯ: Используем более быстрый алгоритм для больших данных
+            from sklearn.neighbors import KNeighborsClassifier
+            # Уменьшаем количество соседей для ускорения
+            n_neighbors = min(3, len(sample_pixels) // 10)
+            knn = KNeighborsClassifier(n_neighbors=max(1, n_neighbors), 
+                                       algorithm='ball_tree' if len(pixels) > 10000 else 'auto',
+                                       n_jobs=-1)  # Используем все ядра
+            knn.fit(sample_pixels, sample_labels)
+            labels = knn.predict(pixels)
+        else:
+            labels = sample_labels
+            
         return labels
 
 

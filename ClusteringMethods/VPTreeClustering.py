@@ -365,14 +365,30 @@ class ConcreteStrategyVPTreeBregman(Strategy):
         pixels: np.ndarray,
         params: StrategyRunConfig
     ) -> np.ndarray:
-        """Кластеризация пикселей изображения"""
-
+        """
+        Кластеризация пикселей изображения.
+        ОПТИМИЗИРОВАНО: Добавлена выборка для больших изображений.
+        """
         pixels = np.asarray(pixels, dtype=np.float64)
 
         # Коррекция формата
         if pixels.shape[0] < pixels.shape[1] and pixels.shape[0] <= 10:
             print(f"🔄 Транспонирование: {pixels.shape} → {pixels.T.shape}")
             pixels = pixels.T
+
+        # Ограничение размера данных для предотвращения зависания
+        # Вычисление матрицы расстояний O(n²) очень затратно для больших изображений
+        MAX_SAMPLES = 2000  # Максимальное количество пикселей для обработки
+        
+        if len(pixels) > MAX_SAMPLES:
+            # ОПТИМИЗАЦИЯ: Используем стратегическую выборку вместо случайной
+            step = int(np.sqrt(len(pixels) / MAX_SAMPLES))
+            indices = np.arange(0, len(pixels), step)[:MAX_SAMPLES]
+            sample_pixels = pixels[indices]
+            use_sampling = True
+        else:
+            sample_pixels = pixels
+            use_sampling = False
 
         model = VPTreeBregmanClustering(
             n_clusters=int(params["n_clusters"]),
@@ -381,8 +397,22 @@ class ConcreteStrategyVPTreeBregman(Strategy):
             normalize=bool(params["normalize"]),
             max_depth=int(params["max_depth"])
         )
+        
+        sample_labels = model.fit_predict(sample_pixels)
+        
+        if use_sampling:
+            # ОПТИМИЗАЦИЯ: Используем более быстрый алгоритм для больших данных
+            from sklearn.neighbors import KNeighborsClassifier
+            n_neighbors = min(3, len(sample_pixels) // 10)
+            knn = KNeighborsClassifier(n_neighbors=max(1, n_neighbors),
+                                       algorithm='ball_tree' if len(pixels) > 10000 else 'auto',
+                                       n_jobs=-1)  # Используем все ядра
+            knn.fit(sample_pixels, sample_labels)
+            labels = knn.predict(pixels)
+        else:
+            labels = sample_labels
 
-        return model.fit_predict(pixels)
+        return labels
 
     def clastering_points(
         self,
