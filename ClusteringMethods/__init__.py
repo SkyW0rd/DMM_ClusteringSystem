@@ -42,6 +42,16 @@ except ImportError as e:
     print(f"⚠️ VP-Tree Bregman Clustering не загружен: {e}")
     print("   Убедитесь, что установлены: pip install scipy scikit-learn numpy")
 
+try:
+    from ClusteringMethods.HPStreamClasteringAlgorithm import (
+        ConcreteStrategyHPStream,
+        HPStreamClustering
+    )
+    print("✅ HPStreamClustering успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  HPStreamClustering не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install numpy scikit-learn")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -53,4 +63,6 @@ __all__ = [
     'BallTreeClustering',
     'ConcreteStrategyVPTreeBregman',
     'VPTreeBregmanClustering',
+    'ConcreteStrategyHPStream',
+    'HPStreamClustering',
 ]
