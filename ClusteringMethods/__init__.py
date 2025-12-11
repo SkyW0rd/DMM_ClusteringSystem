@@ -52,6 +52,16 @@ except ImportError as e:
     print(f"⚠️  HPStreamClustering не загружен: {e}")
     print("   Убедитесь, что установлены: pip install numpy scikit-learn")
 
+# Импорт KMeans с PCA
+try:
+    from ClusteringMethods.KMeansClustering import (
+        ConcreteStrategyKMeans_from_SKLEARN
+    )
+    print("✅ KMeans (SKLearn) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  KMeans (SKLearn) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install scikit-learn numpy")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -65,4 +75,5 @@ __all__ = [
     'VPTreeBregmanClustering',
     'ConcreteStrategyHPStream',
     'HPStreamClustering',
+    'ConcreteStrategyKMeans_from_SKLEARN',
 ]
