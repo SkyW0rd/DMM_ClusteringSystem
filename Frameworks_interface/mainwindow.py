@@ -451,10 +451,34 @@ class MainWindow(QMainWindow):
             subwin.layout().setStretch(0, 12)
             subwin.layout().setStretch(1, 1)
             self._mdiarea.addSubWindow(subwin)
-        
+
         for strategyId, strategyDescription in StrategiesManager.strategies().items():
             genSubWin("sub_" + strategyId, strategyDescription.name)
 
+        # Создаем отдельное подокно для исходного изображения
+        def genImageSubWin():
+            subwin_id = "sub_original_image"
+            cnv1_name = subwin_id + "_cnv"
+            
+            # Подокно для исходного изображения
+            subwin = QMdiSubWindow(objectName=subwin_id,
+                                    windowTitle="Исходное изображение", visible=False, layout=QGridLayout())
+            
+            # Тело окна
+            cnv11_wg = QWidget(subwin, objectName=cnv1_name, layout=QGridLayout(), minimumSize=QSize(150, 150))
+            cnv11_wg.layout().addWidget(QLabel("Исходное изображение: "), 0, 0)
+            
+            # Холст для исходного изображения
+            fg_original = FigureCanvasQTAgg(Figure(figsize=(5, 5), dpi=60))
+            genDockWidget(cnv11_wg.layout(), 1, 0, 1, 1, 1, fg_original)
+            
+            subwin.layout().addWidget(cnv11_wg, 0)
+            subwin.layout().setStretch(0, 1)
+            self._mdiarea.addSubWindow(subwin)
+            
+            return subwin
+        
+        self._original_image_subwin = genImageSubWin()
         self._mdiarea.tileSubWindows()
 
     '''
@@ -941,7 +965,7 @@ class MainWindow(QMainWindow):
             checkBox = QCheckBox()
             checkBox.setProperty("__stratId", strategyId)
             tw3_fr3.setCellWidget(idx, 0, checkBox)
-            
+
             # Человеко-читаемое название метода
             nameItem = QTableWidgetItem(strategyDescription.name)
             nameItem.setToolTip(strategyDescription.description)
@@ -1345,11 +1369,11 @@ class MainWindow(QMainWindow):
 
         # Перестраиваем подокна сразу, чтобы они красиво выглядели
         self._mdiarea.tileSubWindows()
-        
+
         # Запускаем обработку первого метода
         self.statusBar().showMessage('Начало кластеризации...')
         self.button_start.setEnabled(False)  # Блокируем кнопку во время обработки
-        
+
         # Запускаем обработку первого метода
         self.__processNextClusteringMethod()
 
@@ -1384,7 +1408,7 @@ class MainWindow(QMainWindow):
             if rb1_fr2.isChecked():  # Кластеризация точек
                 if srb2_fr1.isChecked() or srb1_fr1.isChecked():
                     Data: List[List[float]] | List[float] = self.property('Data')
-                    
+
                     # Создаем worker для кластеризации точек
                     worker = ClusteringWorker(
                         stratId=stratId,
@@ -1443,25 +1467,25 @@ class MainWindow(QMainWindow):
                         # Пропускаем этот метод
                         QTimer.singleShot(10, self.__processNextClusteringMethod)
                         return
-                
+
                 # ОПТИМИЗАЦИЯ: Уменьшаем разрешение изображения для ускорения кластеризации
                 # Сохраняем оригинальный размер для восстановления результата
                 original_shape = image.shape[:2]
                 original_pixels_count = len(pixels)
-                
+
                 # Максимальное количество пикселей для быстрой обработки
                 MAX_PIXELS_FOR_CLUSTERING = 50000  # ~224x224 пикселей
-                
+
                 if original_pixels_count > MAX_PIXELS_FOR_CLUSTERING:
                     # Вычисляем коэффициент масштабирования
                     scale_factor = np.sqrt(MAX_PIXELS_FOR_CLUSTERING / original_pixels_count)
                     new_height = int(image.shape[0] * scale_factor)
                     new_width = int(image.shape[1] * scale_factor)
-                    
+
                     # Уменьшаем изображение
                     if imgType > 0:
                         # Для OpenCV изображений
-                        resized_image = cv2.resize(image, (new_width, new_height), 
+                        resized_image = cv2.resize(image, (new_width, new_height),
                                                   interpolation=cv2.INTER_AREA)
                         # Пересчитываем пиксели для уменьшенного изображения
                         match imgType:
@@ -1479,7 +1503,7 @@ class MainWindow(QMainWindow):
                         resized_image = np.array(resized_image)
                         pixels = resized_image.reshape((-1, 3))
                         image = resized_image  # Обновляем image для отображения
-                    
+
                     print(f"⚡ Изображение уменьшено: {original_shape} → {image.shape[:2]} "
                           f"({original_pixels_count} → {len(pixels)} пикселей)")
 
@@ -1498,11 +1522,11 @@ class MainWindow(QMainWindow):
             worker.finished.connect(self.__onClusteringFinished)
             worker.error.connect(self.__onClusteringError)
             worker.progress.connect(lambda msg: self.statusBar().showMessage(msg))
-            
+
             # Сохраняем ссылку на worker и запускаем его
             self.__current_worker = worker
             worker.start()
-            
+
         except Exception as e:
             self.statusBar().showMessage(
                 f'Ошибка при подготовке {strategy_name}: {str(e)}')
@@ -1516,6 +1540,12 @@ class MainWindow(QMainWindow):
     def __onClusteringFinished(self, stratId: str, results: dict):
         try:
             if results['type'] == 'points':
+                # Скрываем подокно с исходным изображением для точек
+                original_subwin: QMdiSubWindow = self._mdiarea.findChild(
+                    QMdiSubWindow, "sub_original_image")
+                if original_subwin:
+                    original_subwin.setVisible(False)
+                
                 # Отображаем результаты кластеризации точек
                 Data = results['data']
                 labels = results['labels']
@@ -1539,28 +1569,90 @@ class MainWindow(QMainWindow):
 
                 # Обновляем графики
                 subWinBody: QWidget = self._mdiarea.findChild(QWidget, 'sub_' + stratId + '_cnv')
-                cnv11: FigureCanvasQTAgg = subWinBody \
-                    .layout().itemAtPosition(1, 0).widget().findChild(QDockWidget, 'dw1') \
-                    .widget().layout().itemAtPosition(0, 0).widget()
-                qmv1 = subWinBody.layout().itemAtPosition(1, 1).widget()
-                cnv12: FigureCanvasQTAgg = qmv1.findChild(QDockWidget, 'dw2') \
-                    .widget().layout().itemAtPosition(0, 0).widget()
-                cnv11.figure.clear()
-                cnv11.figure.add_subplot(1, 1, 1)
-                cnv11.figure.axes[0].scatter(Data[0], Data[1], c=labels, cmap="rainbow")
-                cnv11.draw()
-                qmv1.setVisible(True)
-                cnv12.figure.clear()
-                cnv12.figure.add_subplot(projection="3d")
-                cnv12.figure.axes[0].scatter(
-                    Data[0], Data[1], Data[2], c=labels, cmap="rainbow")
-                cnv12.draw()
+                layout = subWinBody.layout()
+                
+                # Для точек: находим оба окна и возвращаем их в правильное состояние
+                # Ищем окна по их DockWidget
+                qmv1 = None
+                qmv2 = None
+                
+                # Проходим по всем элементам layout и ищем окна
+                for i in range(layout.count()):
+                    item = layout.itemAt(i)
+                    if item and item.widget():
+                        widget = item.widget()
+                        # Проверяем наличие DockWidget для идентификации
+                        if widget.findChild(QDockWidget, 'dw1'):
+                            qmv1 = widget
+                        elif widget.findChild(QDockWidget, 'dw2'):
+                            qmv2 = widget
+                
+                # Если не нашли, пробуем стандартные позиции
+                if not qmv1:
+                    item = layout.itemAtPosition(1, 0)
+                    if item:
+                        qmv1 = item.widget()
+                if not qmv2:
+                    item = layout.itemAtPosition(1, 1)
+                    if item:
+                        qmv2 = item.widget()
+                
+                if qmv1 and qmv2:
+                    # Удаляем оба окна из layout
+                    layout.removeWidget(qmv1)
+                    layout.removeWidget(qmv2)
+                    
+                    # Возвращаем их в правильные позиции (каждое в свою колонку)
+                    layout.addWidget(qmv1, 1, 0, 1, 1)
+                    layout.addWidget(qmv2, 1, 1, 1, 1)
+                    
+                    # Убеждаемся, что оба окна видны
+                    qmv1.setVisible(True)
+                    qmv2.setVisible(True)
+                    
+                    # Устанавливаем равные пропорции колонок
+                    layout.setColumnStretch(0, 1)
+                    layout.setColumnStretch(1, 1)
+                    
+                    # Получаем canvas для отображения графиков
+                    cnv11: FigureCanvasQTAgg = qmv1.findChild(QDockWidget, 'dw1') \
+                        .widget().layout().itemAtPosition(0, 0).widget()
+                    cnv12: FigureCanvasQTAgg = qmv2.findChild(QDockWidget, 'dw2') \
+                        .widget().layout().itemAtPosition(0, 0).widget()
+                    
+                    # Очищаем и отображаем 2D график точек
+                    cnv11.figure.clear()
+                    ax1 = cnv11.figure.add_subplot(1, 1, 1)
+                    ax1.scatter(Data[0], Data[1], c=labels, cmap="rainbow")
+                    cnv11.draw()
+                    
+                    # Очищаем и отображаем 3D график точек
+                    cnv12.figure.clear()
+                    ax2 = cnv12.figure.add_subplot(projection="3d")
+                    ax2.scatter(Data[0], Data[1], Data[2], c=labels, cmap="rainbow")
+                    cnv12.draw()
 
             else:  # image
                 # Отображаем результаты кластеризации изображений
                 image = results['image']
                 clustered_image = results['clustered_image']
                 elapsed = results['elapsed']
+
+                # Показываем и обновляем подокно с исходным изображением
+                original_subwin: QMdiSubWindow = self._mdiarea.findChild(
+                    QMdiSubWindow, "sub_original_image")
+                if original_subwin:
+                    original_subwin.setVisible(True)
+                    original_subwin_body = self._mdiarea.findChild(QWidget, "sub_original_image_cnv")
+                    if original_subwin_body:
+                        qmv_original = original_subwin_body.layout().itemAtPosition(1, 0).widget()
+                        cnv_original: FigureCanvasQTAgg = qmv_original.findChild(QDockWidget, 'dw1') \
+                            .widget().layout().itemAtPosition(0, 0).widget()
+                        cnv_original.figure.clear()
+                        cnv_original.figure.add_subplot(1, 1, 1)
+                        cnv_original.figure.axes[0].imshow(image)
+                        cnv_original.figure.axes[0].set_title("Исходное изображение")
+                        cnv_original.draw()
 
                 # Подокно с результатами
                 qmv: QMdiSubWindow = self._mdiarea.findChild(
@@ -1569,28 +1661,41 @@ class MainWindow(QMainWindow):
                 qmvv: QMainWindow = spl.layoutContentArea().itemAt(0).widget()
                 tw: QTableWidget = qmvv.findChild(QTableWidget, 'stw')
                 tw.setItem(0, 1, QTableWidgetItem(str(elapsed)))
-                
+
                 subWinBody = self._mdiarea.findChild(QWidget, "sub_" + stratId + "_cnv")
-                cnv11: FigureCanvasQTAgg = subWinBody \
-                    .layout().itemAtPosition(1, 0).widget().findChild(QDockWidget, 'dw1') \
+                
+                # Для изображений: результат кластеризации занимает всю площадь
+                qmv1 = subWinBody.layout().itemAtPosition(1, 0).widget()
+                qmv2 = subWinBody.layout().itemAtPosition(1, 1).widget()
+                
+                # Скрываем левое окно (исходное изображение)
+                qmv1.setVisible(False)
+                # Показываем правое окно (результат кластеризации)
+                qmv2.setVisible(True)
+                
+                # Перемещаем правое окно так, чтобы оно занимало обе колонки (всю площадь)
+                subWinBody.layout().removeWidget(qmv2)
+                subWinBody.layout().addWidget(qmv2, 1, 0, 1, 2)
+                
+                # Устанавливаем растяжение колонок
+                subWinBody.layout().setColumnStretch(0, 1)
+                subWinBody.layout().setColumnStretch(1, 0)
+                
+                # Отображаем результат кластеризации в правом окне (занимает всю площадь)
+                cnv12: FigureCanvasQTAgg = qmv2.findChild(QDockWidget, 'dw2') \
                     .widget().layout().itemAtPosition(0, 0).widget()
-                qmv1 = subWinBody \
-                    .layout().itemAtPosition(1, 1).widget()
-                cnv12: FigureCanvasQTAgg = qmv1.findChild(QDockWidget, 'dw2') \
-                    .widget().layout().itemAtPosition(0, 0).widget()
-                cnv11.figure.clear()
-                cnv11.figure.add_subplot(1, 1, 1)
-                cnv11.figure.axes[0].imshow(image)
-                cnv11.draw()
-                qmv1.setVisible(True)
                 cnv12.figure.clear()
-                cnv12.figure.add_subplot(1, 1, 1)
-                cnv12.figure.axes[0].imshow(clustered_image)
+                ax = cnv12.figure.add_subplot(1, 1, 1)
+                ax.imshow(clustered_image)
+                ax.set_title("Результат кластеризации")
                 cnv12.draw()
+                
+                # Перестраиваем все окна вместе (включая подокно с исходным изображением)
+                self._mdiarea.tileSubWindows()
 
             strategy_name = StrategiesManager.strategies()[stratId].name
             self.statusBar().showMessage(f'{strategy_name} завершен!')
-            
+
         except Exception as e:
             self.statusBar().showMessage(
                 f'Ошибка при отображении результатов: {str(e)}')
@@ -1609,7 +1714,7 @@ class MainWindow(QMainWindow):
         strategy_name = StrategiesManager.strategies()[stratId].name
         self.statusBar().showMessage(
             f'Ошибка при обработке {strategy_name}: {error_msg}')
-        
+
         # Очищаем worker и переходим к следующему методу
         if self.__current_worker is not None:
             self.__current_worker.deleteLater()
@@ -1673,6 +1778,15 @@ class MainWindow(QMainWindow):
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         self.cursor1.setShape(Qt.CursorShape.OpenHandCursor)
+
+    '''
+        @brief  Обработчик изменения размера окна для перестройки подокон.
+    '''
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # Перестраиваем подокна при изменении размера главного окна
+        QTimer.singleShot(100, lambda: self._mdiarea.tileSubWindows())
 
     '''
         @brief  Изменение темы приложения на первую.
