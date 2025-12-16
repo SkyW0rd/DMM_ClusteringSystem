@@ -1,7 +1,7 @@
 """
 MiniBatchKMeans Clustering Algorithm Implementation
-Автор: Мысин Юрий [yuriymysin@yandex.ru]
-Последнее обновление: 2025-01-XX
+Автор: Левинский Григорий [glevinskiy@gmail.com]
+Последнее обновление: 2025-12-16
 
 Реализация алгоритма MiniBatchKMeans из sklearn для кластеризации данных.
 MiniBatchKMeans - это быстрая версия KMeans, использующая мини-батчи для
