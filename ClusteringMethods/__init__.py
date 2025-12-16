@@ -62,6 +62,16 @@ except ImportError as e:
     print(f"⚠️  KMeans (SKLearn) не загружен: {e}")
     print("   Убедитесь, что установлены: pip install scikit-learn numpy")
 
+# Импорт MiniBatchKMeans
+try:
+    from ClusteringMethods.MiniBatchKMeansClustering import (
+        ConcreteStrategyMiniBatchKMeans_from_SKLEARN
+    )
+    print("✅ MiniBatchKMeans (SKLearn) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  MiniBatchKMeans (SKLearn) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install scikit-learn numpy")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -76,4 +86,5 @@ __all__ = [
     'ConcreteStrategyHPStream',
     'HPStreamClustering',
     'ConcreteStrategyKMeans_from_SKLEARN',
+    'ConcreteStrategyMiniBatchKMeans_from_SKLEARN',
 ]

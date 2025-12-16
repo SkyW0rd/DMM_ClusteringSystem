@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+import matplotlib.colors as mcolors
 
 from PIL import Image   # pip install Pillow(PIL)
 from PySide6.QtCore import (
@@ -90,6 +91,61 @@ ORGANIZATION_NAME = 'RTU MIREA'
 ORGANIZATION_DOMAIN = 'mirea.ru'
 APPLICATION_NAME = 'ClustSystem'
 APPLICATION_VERSION = '0.1.2'
+
+# Яркая палитра цветов для кластеризации
+BRIGHT_COLORS = [
+    '#00FF00',  # Яркий зеленый
+    '#0000FF',  # Яркий синий
+    '#FF0000',  # Яркий красный
+    '#00FFFF',  # Cyan
+    '#FFA500',  # Оранжевый
+    '#FF00FF',  # Magenta
+    '#FFFF00',  # Желтый
+    '#FF1493',  # Deep Pink
+    '#00CED1',  # Dark Turquoise
+    '#32CD32',  # Lime Green
+    '#FF4500',  # Orange Red
+    '#8A2BE2',  # Blue Violet
+    '#FFD700',  # Gold
+    '#DC143C',  # Crimson
+    '#00FA9A',  # Medium Spring Green
+    '#1E90FF',  # Dodger Blue
+    '#FF69B4',  # Hot Pink
+    '#7FFF00',  # Chartreuse
+    '#FF6347',  # Tomato
+    '#40E0D0',  # Turquoise
+]
+
+def get_cluster_colors(labels):
+    """
+    Получить яркие цвета для кластеров
+    
+    Parameters:
+    -----------
+    labels : ndarray
+        Метки кластеров
+        
+    Returns:
+    --------
+    colors : list
+        Список цветов для каждой точки
+    """
+    unique_labels = np.unique(labels)
+    n_clusters = len(unique_labels)
+    
+    # Создаем словарь соответствия меток и цветов
+    label_to_color = {}
+    for i, label in enumerate(unique_labels):
+        if label == -1 or label == 0:  # Шум
+            label_to_color[label] = '#000000'  # Черный для шума
+        else:
+            # Используем яркие цвета по кругу
+            color_idx = (i - 1) % len(BRIGHT_COLORS)
+            label_to_color[label] = BRIGHT_COLORS[color_idx]
+    
+    # Создаем массив цветов для каждой точки
+    colors = [label_to_color[label] for label in labels]
+    return colors
 
 LIST_TYPE_DISTRIBUTION = ['Нормальное', 'Показательное', 'Биноминальное']
 
@@ -379,6 +435,8 @@ class MainWindow(QMainWindow):
                                                        # Обеспечивает размытие по контору.
                                                        offset=QPoint(5, 5))
         self._mdiarea.setGraphicsEffect(dropShawdowEffect3)
+        # Подключаем обработчик для обновления заголовка при активации подокна
+        self._mdiarea.subWindowActivated.connect(self._onSubWindowActivated)
         self._mdiarea.tileSubWindows()
 
     '''
@@ -1087,26 +1145,29 @@ class MainWindow(QMainWindow):
                     data_image1 = [x[0] for x in data]
                     data_image2 = [y_step for _ in data]
                     data_image3 = [z_step for _ in data]
+                    colors = get_cluster_colors(labels)
                     cnv1_ax.figure.axes[0].scatter(
-                        data_image1, data_image2, c=labels)
+                        data_image1, data_image2, c=colors, s=20, alpha=0.7)
                     cnv2_ax.figure.axes[0].scatter(
-                        data_image1, data_image2, data_image3, c=labels)
+                        data_image1, data_image2, data_image3, c=colors, s=20, alpha=0.7)
                 case 2:
                     data_image1 = [x[0] for x in data]
                     data_image2 = [y[1] for y in data]
                     data_image3 = [z_step for _ in data]
+                    colors = get_cluster_colors(labels)
                     cnv1_ax.figure.axes[0].scatter(
-                        data_image1, data_image2, c=labels)
+                        data_image1, data_image2, c=colors, s=20, alpha=0.7)
                     cnv2_ax.figure.axes[0].scatter(
-                        data_image1, data_image2, data_image3, c=labels)
+                        data_image1, data_image2, data_image3, c=colors, s=20, alpha=0.7)
                 case 3 | _:
                     data_image1 = [x[0] for x in data]
                     data_image2 = [y[1] for y in data]
                     data_image3 = [z[2] for z in data]
+                    colors = get_cluster_colors(labels)
                     cnv1_ax.figure.axes[0].scatter(
-                        data_image1, data_image2, c=labels)
+                        data_image1, data_image2, c=colors, s=20, alpha=0.7)
                     cnv2_ax.figure.axes[0].scatter(
-                        data_image1, data_image2, data_image3, c=labels)
+                        data_image1, data_image2, data_image3, c=colors, s=20, alpha=0.7)
             cnv1_ax.draw()
             cnv2_ax.draw()
             rb13.setChecked(True)
@@ -1623,14 +1684,21 @@ class MainWindow(QMainWindow):
                     # Очищаем и отображаем 2D график точек
                     cnv11.figure.clear()
                     ax1 = cnv11.figure.add_subplot(1, 1, 1)
-                    ax1.scatter(Data[0], Data[1], c=labels, cmap="rainbow")
+                    colors = get_cluster_colors(labels)
+                    ax1.scatter(Data[0], Data[1], c=colors, s=20, alpha=0.7)
+                    ax1.set_title(f'{StrategiesManager.strategies()[stratId].name}')
                     cnv11.draw()
                     
                     # Очищаем и отображаем 3D график точек
                     cnv12.figure.clear()
                     ax2 = cnv12.figure.add_subplot(projection="3d")
-                    ax2.scatter(Data[0], Data[1], Data[2], c=labels, cmap="rainbow")
+                    ax2.scatter(Data[0], Data[1], Data[2], c=colors, s=20, alpha=0.7)
+                    ax2.set_title(f'{StrategiesManager.strategies()[stratId].name}')
                     cnv12.draw()
+                    
+                    # Обновляем заголовок главного окна с названием метода
+                    strategy_name = StrategiesManager.strategies()[stratId].name
+                    self.label.setText(f"{APPLICATION_NAME} - {strategy_name}")
 
             else:  # image
                 # Отображаем результаты кластеризации изображений
@@ -1801,6 +1869,43 @@ class MainWindow(QMainWindow):
 
     def changeSecondTheme(self, Color, message):
         self.changeTheme(Color, 'theme_second', message)
+    
+    '''
+        @brief  Обработчик активации подокна для обновления заголовка главного окна.
+    '''
+    
+    def _onSubWindowActivated(self, subWindow: QMdiSubWindow):
+        """
+        Обновляет заголовок главного окна при активации подокна
+        
+        Parameters:
+        -----------
+        subWindow : QMdiSubWindow
+            Активированное подокно
+        """
+        if subWindow is None:
+            # Если подокно закрыто, проверяем есть ли другие открытые подокна
+            active_subwindow = self._mdiarea.activeSubWindow()
+            if active_subwindow is None:
+                # Если нет активных подокон, возвращаем стандартный заголовок
+                self.label.setText(APPLICATION_NAME)
+            else:
+                # Если есть другое активное подокно, обновляем заголовок для него
+                window_title = active_subwindow.windowTitle()
+                if window_title and window_title != "Исходное изображение":
+                    self.label.setText(f"{APPLICATION_NAME} - {window_title}")
+                else:
+                    self.label.setText(APPLICATION_NAME)
+            return
+        
+        # Получаем название метода из windowTitle подокна
+        window_title = subWindow.windowTitle()
+        if window_title and window_title != "Исходное изображение":
+            # Обновляем заголовок главного окна с названием метода кластеризации
+            self.label.setText(f"{APPLICATION_NAME} - {window_title}")
+        else:
+            # Для исходного изображения или если нет названия - стандартный заголовок
+            self.label.setText(APPLICATION_NAME)
 
     '''
         @brief  Изменение темы приложения.
