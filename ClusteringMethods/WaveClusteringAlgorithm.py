@@ -78,7 +78,6 @@ class WaveClustering:
             grid = np.zeros((self.n_grid, self.n_grid, self.n_grid))
         else:
             # For higher dimensions, use only first 2 features
-            print(f"⚠️  Warning: {n_features}D data detected. Using only first 2 dimensions.")
             X = X[:, :2]
             n_features = 2
             min_vals = X.min(axis=0)
@@ -237,7 +236,6 @@ class WaveClustering:
 
         # Handle case when max_density is 0
         if max_density == 0:
-            print("⚠️  Warning: No dense regions found. All points marked as noise.")
             self.labels_ = np.zeros(X.shape[0], dtype=int)
             self.n_clusters_ = 0
             return self
@@ -336,7 +334,6 @@ class ConcreteStrategyWaveClustering(Strategy):
 
         # Если данные в формате (n_features, n_samples), транспонируем
         if pixels.shape[0] < pixels.shape[1] and pixels.shape[0] <= 10:
-            print(f"🔄 Транспонирование данных: {pixels.shape} -> {pixels.T.shape}")
             pixels = pixels.T
 
         model = WaveClustering(
@@ -369,7 +366,6 @@ class ConcreteStrategyWaveClustering(Strategy):
         # Если данные в формате (n_features, n_samples), транспонируем
         # Предполагаем, что n_features обычно меньше, чем n_samples
         if points.shape[0] < points.shape[1] and points.shape[0] <= 10:
-            print(f"🔄 Транспонирование данных: {points.shape} -> {points.T.shape}")
             points = points.T
 
         model = WaveClustering(

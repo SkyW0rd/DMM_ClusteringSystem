@@ -179,7 +179,6 @@ class VPTreeBregmanClustering:
                     distance_matrix[i, j] = dist
                     distance_matrix[j, i] = dist
                 except Exception as e:
-                    print(f"⚠️ Ошибка при вычислении расстояния между {i} и {j}: {e}")
                     # Используем евклидову дивергенцию как fallback
                     dist = euclidean(X[i], X[j]) ** 2 / 2
                     distance_matrix[i, j] = dist
@@ -239,11 +238,6 @@ class VPTreeBregmanClustering:
         ) - 1  # Привести к 0-индексации
 
         self.n_clusters_found_ = len(np.unique(self.labels_))
-
-        # Проверка результатов
-        if self.n_clusters_found_ != self.n_clusters:
-            print(f"⚠️ Запрошено {self.n_clusters} кластеров, "
-                  f"но получено {self.n_clusters_found_}")
 
         return self
 
@@ -373,7 +367,6 @@ class ConcreteStrategyVPTreeBregman(Strategy):
 
         # Коррекция формата
         if pixels.shape[0] < pixels.shape[1] and pixels.shape[0] <= 10:
-            print(f"🔄 Транспонирование: {pixels.shape} → {pixels.T.shape}")
             pixels = pixels.T
 
         # Ограничение размера данных для предотвращения зависания
@@ -425,7 +418,6 @@ class ConcreteStrategyVPTreeBregman(Strategy):
 
         # Коррекция формата
         if points.shape[0] < points.shape[1] and points.shape[0] <= 10:
-            print(f"🔄 Транспонирование: {points.shape} → {points.T.shape}")
             points = points.T
 
         model = VPTreeBregmanClustering(

@@ -90,11 +90,6 @@ class BallTreeClustering:
 
         self.n_clusters_found_ = len(np.unique(self.labels_))
 
-        # === ПРОВЕРКА РЕЗУЛЬТАТОВ ===
-        if self.n_clusters_found_ != self.n_clusters:
-            print(f"⚠️  Запрошено {self.n_clusters} кластеров, "
-                  f"но получено {self.n_clusters_found_}")
-
         return self
 
     def fit_predict(self, X: np.ndarray) -> np.ndarray:
@@ -194,7 +189,6 @@ class ConcreteStrategyBallTree(Strategy):
 
         # Коррекция формата
         if pixels.shape[0] < pixels.shape[1] and pixels.shape[0] <= 10:
-            print(f"🔄 Транспонирование: {pixels.shape} → {pixels.T.shape}")
             pixels = pixels.T
 
         model = BallTreeClustering(
@@ -212,7 +206,6 @@ class ConcreteStrategyBallTree(Strategy):
 
         # Коррекция формата
         if points.shape[0] < points.shape[1] and points.shape[0] <= 10:
-            print(f"🔄 Транспонирование: {points.shape} → {points.T.shape}")
             points = points.T
 
         model = BallTreeClustering(
