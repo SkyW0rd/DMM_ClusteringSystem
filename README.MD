@@ -214,7 +214,7 @@ class ConcreteStrategyAlgorithm(Strategy):
 - [`Documentation/Programming documentation/Как добавить новый метод кластеризации.md`](Documentation/Programming%20documentation/Как%20добавить%20новый%20метод%20кластеризации.md)
 
 Полный список реализованных методов и их параметров:
-- [`ClusteringMethods/README.md`](ClusteringMethods/README.md)
+- [`ClusteringMethods/README.MD`](ClusteringMethods/README.MD)
 
 ---
 
