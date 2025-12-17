@@ -2,10 +2,6 @@
 MiniBatchKMeans Clustering Algorithm Implementation
 Автор: Левинский Григорий [glevinskiy@gmail.com]
 Последнее обновление: 2025-12-16
-
-Реализация алгоритма MiniBatchKMeans из sklearn для кластеризации данных.
-MiniBatchKMeans - это быстрая версия KMeans, использующая мини-батчи для
-обработки больших наборов данных.
 """
 
 import numpy as np
@@ -158,7 +154,6 @@ class ConcreteStrategyMiniBatchKMeans_from_SKLEARN(Strategy):
     def clastering_image(self, pixels: np.ndarray, params: StrategyRunConfig) -> np.ndarray:
         """
         Кластеризация изображения методом MiniBatchKMeans.
-        ОПТИМИЗИРОВАНО: MiniBatchKMeans уже оптимизирован для больших данных.
         """
         pixels = np.asarray(pixels, dtype=np.float64)
 

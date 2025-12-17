@@ -99,10 +99,6 @@ class BallTreeClustering:
         return self.fit(X).labels_
 
 
-# ============================================================================
-# ИНТЕГРАЦИЯ В ПРОЕКТ DMM CLUSTERING SYSTEM
-# ============================================================================
-
 @StrategiesManager.registerStrategy(
     "balltree",
     "BallTree Hierarchical Clustering",

@@ -4,13 +4,12 @@ WaveClustering Algorithm Implementation
 Последнее обновление: 2025-10-21
 """
 
-# Импорты из стандартной библиотеки и внешних пакетов
+
 import numpy as np
 from typing import Dict, List, Tuple
-import pywt  # PyWavelets library for wavelet transforms
+import pywt
 from scipy import ndimage
 
-# ВАЖНО: Импорты из проекта DMM Clustering System
 from ClusteringMethods.ClasteringAlgorithms import (
     Strategy,
     StrategyParamType,
@@ -269,7 +268,6 @@ class WaveClustering:
         return self.fit(X).labels_
 
 
-# Integration with existing project structure
 @StrategiesManager.registerStrategy(
     "waveclustering",
     "WaveClustering",
@@ -277,7 +275,7 @@ class WaveClustering:
 )
 class ConcreteStrategyWaveClustering(Strategy):
     """
-    WaveClustering strategy for the DMM Clustering System
+    WaveClustering strategy
     """
 
     @classmethod

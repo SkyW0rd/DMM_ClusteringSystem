@@ -118,7 +118,6 @@ class ConcreteStrategyKMeans_from_SKLEARN(Strategy):
     def clastering_image(self, pixels: np.ndarray, params: StrategyRunConfig) -> np.ndarray:
         """
         Кластеризация изображения методом KMeans.
-        ОПТИМИЗИРОВАНО: Добавлена выборка для больших изображений.
         """
         pixels = np.asarray(pixels, dtype=np.float64)
 
@@ -130,7 +129,6 @@ class ConcreteStrategyKMeans_from_SKLEARN(Strategy):
         MAX_SAMPLES = 10000  # Максимальное количество пикселей для обработки
 
         if len(pixels) > MAX_SAMPLES:
-            # ОПТИМИЗАЦИЯ: Используем стратегическую выборку вместо случайной
             # Равномерная выборка по сетке для лучшего покрытия изображения
             step = int(np.sqrt(len(pixels) / MAX_SAMPLES))
             indices = np.arange(0, len(pixels), step)[:MAX_SAMPLES]
@@ -168,7 +166,6 @@ class ConcreteStrategyKMeans_from_SKLEARN(Strategy):
         sample_labels = model.fit_predict(pixel_values_scaled)
 
         if use_sampling:
-            # ОПТИМИЗАЦИЯ: Используем обученную модель для предсказания на всех пикселях
             # Применяем те же преобразования к полному набору данных
             pixels_scaled = scaler.transform(pixels)
             if params["use_pca"] and pca is not None:

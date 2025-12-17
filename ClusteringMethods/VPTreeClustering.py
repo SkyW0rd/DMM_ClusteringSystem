@@ -258,14 +258,10 @@ class VPTreeBregmanClustering:
         return self.fit(X).labels_
 
 
-# ============================================================================
-# ИНТЕГРАЦИЯ В ПРОЕКТ DMM CLUSTERING SYSTEM
-# ============================================================================
-
 @StrategiesManager.registerStrategy(
     "vptree_bregman",
     "VP-Tree Bregman Divergence Clustering",
-    "Кластеризация на основе VP-tree с дивергенциями (БЕЗ pyBregman)"
+    "Кластеризация на основе VP-tree с дивергенциями"
 )
 class ConcreteStrategyVPTreeBregman(Strategy):
     """
@@ -338,7 +334,6 @@ class ConcreteStrategyVPTreeBregman(Strategy):
             StrategyParamType.Bool,
             """
             Нормализировать входные данные перед кластеризацией.
-            КРИТИЧЕСКИ ВАЖНО для корректной работы!
             """,
             True
         )
@@ -349,7 +344,6 @@ class ConcreteStrategyVPTreeBregman(Strategy):
             StrategyParamType.UNumber,
             """
             Максимальная глубина дерева VP-tree.
-            Зарезервировано для будущих оптимизаций.
             """,
             10
         )
@@ -374,7 +368,6 @@ class ConcreteStrategyVPTreeBregman(Strategy):
         MAX_SAMPLES = 2000  # Максимальное количество пикселей для обработки
         
         if len(pixels) > MAX_SAMPLES:
-            # ОПТИМИЗАЦИЯ: Используем стратегическую выборку вместо случайной
             step = int(np.sqrt(len(pixels) / MAX_SAMPLES))
             indices = np.arange(0, len(pixels), step)[:MAX_SAMPLES]
             sample_pixels = pixels[indices]
@@ -394,7 +387,6 @@ class ConcreteStrategyVPTreeBregman(Strategy):
         sample_labels = model.fit_predict(sample_pixels)
         
         if use_sampling:
-            # ОПТИМИЗАЦИЯ: Используем более быстрый алгоритм для больших данных
             from sklearn.neighbors import KNeighborsClassifier
             n_neighbors = min(3, len(sample_pixels) // 10)
             knn = KNeighborsClassifier(n_neighbors=max(1, n_neighbors),

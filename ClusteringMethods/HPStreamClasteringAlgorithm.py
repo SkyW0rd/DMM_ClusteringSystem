@@ -197,7 +197,7 @@ class HPStreamClustering:
 )
 
 class ConcreteStrategyHPStream(Strategy):
-    """Стратегия HPStream для DMM Clustering System"""
+    """Стратегия HPStream"""
     @classmethod
     def _setupParams(cls):
         """Настройка параметров стратегии"""
@@ -244,7 +244,6 @@ class ConcreteStrategyHPStream(Strategy):
     def clastering_image(self, pixels: np.ndarray, params: StrategyRunConfig) -> np.ndarray:
         """
         Кластеризация изображения.
-        ОПТИМИЗИРОВАНО: Добавлена выборка для больших изображений.
         """
         pixels = np.asarray(pixels, dtype=np.float64)
 
@@ -257,7 +256,6 @@ class ConcreteStrategyHPStream(Strategy):
         MAX_SAMPLES = 5000  # Максимальное количество пикселей для обработки
         
         if len(pixels) > MAX_SAMPLES:
-            # ОПТИМИЗАЦИЯ: Используем стратегическую выборку вместо случайной
             step = int(np.sqrt(len(pixels) / MAX_SAMPLES))
             indices = np.arange(0, len(pixels), step)[:MAX_SAMPLES]
             sample_pixels = pixels[indices]
@@ -277,7 +275,6 @@ class ConcreteStrategyHPStream(Strategy):
         sample_labels = model.fit_predict(sample_pixels)
         
         if use_sampling:
-            # ОПТИМИЗАЦИЯ: Используем более быстрый алгоритм для больших данных
             from sklearn.neighbors import KNeighborsClassifier
             n_neighbors = min(3, len(sample_pixels) // 10)
             knn = KNeighborsClassifier(n_neighbors=max(1, n_neighbors),
