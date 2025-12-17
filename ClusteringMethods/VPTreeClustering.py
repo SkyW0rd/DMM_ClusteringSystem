@@ -267,7 +267,6 @@ class ConcreteStrategyVPTreeBregman(Strategy):
     """
     Особенности:
     - Использует дивергенции и метрики расстояния
-    - Не требует pyBregman (использует только scipy)
     - Эффективен для высокомерных данных
     - Поддерживает различные типы дивергенций
     """
@@ -355,7 +354,6 @@ class ConcreteStrategyVPTreeBregman(Strategy):
     ) -> np.ndarray:
         """
         Кластеризация пикселей изображения.
-        ОПТИМИЗИРОВАНО: Добавлена выборка для больших изображений.
         """
         pixels = np.asarray(pixels, dtype=np.float64)
 

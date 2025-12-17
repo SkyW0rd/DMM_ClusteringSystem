@@ -106,7 +106,7 @@ class BallTreeClustering:
 )
 class ConcreteStrategyBallTree(Strategy):
     """
-    BallTree strategy для DMM Clustering System (v2.1 - CORRECTED).
+    BallTree strategy.
     """
 
     @classmethod
@@ -120,7 +120,6 @@ class ConcreteStrategyBallTree(Strategy):
             """
             Желаемое количество кластеров.
             
-            В отличие от DBSCAN, здесь ОБЯЗАТЕЛЬНО указывать количество.
             Примеры: 2, 3, 4, 5...
             """,
             4
@@ -159,22 +158,20 @@ class ConcreteStrategyBallTree(Strategy):
 
         cls._addParam(
             "n_neighbors",
-            "K для k-NN (не используется в v2.1)",
+            "K для k-NN",
             StrategyParamType.UNumber,
             """
             Зарезервировано для совместимости.
-            В v2.1 не используется (используется полная матрица расстояний).
             """,
             5
         )
 
         cls._addParam(
             "leaf_size",
-            "Размер листа BallTree (не используется в v2.1)",
+            "Размер листа BallTree",
             StrategyParamType.UNumber,
             """
             Зарезервировано для совместимости.
-            В v2.1 не используется.
             """,
             40
         )
