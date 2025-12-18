@@ -11,7 +11,6 @@ from sklearn.preprocessing import StandardScaler
 from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.spatial.distance import pdist
 
-# ВАЖНО: Импорты из проекта DMM Clustering System
 from ClusteringMethods.ClasteringAlgorithms import (
     Strategy,
     StrategyParamType,
@@ -40,7 +39,7 @@ class BallTreeClustering:
         Количество кластеров.
 
     normalize : bool, default=True
-        Нормализировать данные перед кластеризацией (ВАЖНО!).
+        Нормализировать данные.
     """
 
     def __init__(self, n_neighbors=5, leaf_size=40, metric='euclidean',
