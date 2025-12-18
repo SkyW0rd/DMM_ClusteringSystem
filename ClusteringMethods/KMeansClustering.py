@@ -1,5 +1,5 @@
 """
-WaveClustering Algorithm Implementation
+KMeans Algorithm Implementation
 Автор: Мысин Юрий [yuriymysin@yandex.ru]
 Последнее обновление: 2025-12-11
 """
