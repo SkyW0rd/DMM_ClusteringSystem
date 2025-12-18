@@ -187,7 +187,7 @@ class ConcreteStrategyBallTree(Strategy):
             n_clusters=int(params["n_clusters"]),
             linkage_method=params["linkage_method"],
             metric=params["metric"],
-            normalize=True  # КРИТИЧЕСКИ ВАЖНО!
+            normalize=True
         )
 
         return model.fit_predict(pixels)
@@ -204,7 +204,7 @@ class ConcreteStrategyBallTree(Strategy):
             n_clusters=int(params["n_clusters"]),
             linkage_method=params["linkage_method"],
             metric=params["metric"],
-            normalize=True  # КРИТИЧЕСКИ ВАЖНО!
+            normalize=True
         )
 
         return model.fit_predict(points)
