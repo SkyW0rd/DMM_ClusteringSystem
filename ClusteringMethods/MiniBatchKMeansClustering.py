@@ -11,7 +11,6 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-# ВАЖНО: Импорты из проекта DMM Clustering System
 from ClusteringMethods.ClasteringAlgorithms import (
     Strategy,
     StrategyParamType,
