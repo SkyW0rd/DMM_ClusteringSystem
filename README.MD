@@ -76,6 +76,7 @@ DMM_ClusteringSystem/
 │   ├── KMeansClustering.py
 │   ├── MiniBatchKMeansClustering.py
 │   ├── VPTreeClustering.py
+│   ├── AgglomerativeClustering.py
 │   └── README.md               # Документация по методам
 │
 ├── AnalysisMethods/            # Методы анализа качества кластеризации
@@ -557,6 +558,7 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 - **WaveClustering**: для данных с кластерами различного масштаба, пространственной структуры
 - **HPStream**: для высокомерных потоковых данных
 - **Spectral Clustering**: для невыпуклых кластеров, графовых данных
+- **Agglomerative Clustering**: для иерархического разбиения при известном или пороговом числе кластеров, небольших и средних выборок
 - **GMM**: для вероятностной кластеризации, перекрывающихся кластеров
 
 Подробное описание каждого метода и рекомендации: [`ClusteringMethods/README.md`](ClusteringMethods/README.md)

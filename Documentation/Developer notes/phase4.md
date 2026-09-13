@@ -43,6 +43,12 @@
    - Поддержка опциональной PCA декомпозиции
    - Зависимости: scikit-learn
 
+7. **AgglomerativeClustering** (`AgglomerativeClustering.py`)
+   - Иерархическая агломеративная кластеризация из scikit-learn
+   - Методы linkage: ward, complete, average, single
+   - Поддержка метрик расстояния и порога `distance_threshold`
+   - Зависимости: scikit-learn
+
 ### Изменения в структуре проекта
 
 - **Создана директория `Documentation/`** для централизованного хранения всей документации:
@@ -88,7 +94,7 @@
 
 #### Методы из scikit-learn
 
-- [ ] **AgglomerativeClustering** — иерархическая агломеративная кластеризация
+- [x] **AgglomerativeClustering** — иерархическая агломеративная кластеризация
 - [ ] **AffinityPropagation** — распространение сходства
 - [ ] **MeanShift** — сдвиг среднего значения
 - [ ] **Spectral Clustering** (расширенная версия с дополнительными параметрами)

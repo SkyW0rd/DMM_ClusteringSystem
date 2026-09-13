@@ -658,3 +658,45 @@ class VPTreeBregmanClustering(
 **Источник:** `ClusteringMethods/VPTreeClustering.py`
 
 ---
+
+### 19. Agglomerative Clustering (Иерархическая агломеративная кластеризация)
+
+**Установка:**
+```bash
+python -m pip install scikit-learn
+```
+**Импорт:**
+```python
+from sklearn.cluster import AgglomerativeClustering
+from ClusteringMethods.AgglomerativeClustering import ConcreteStrategyAgglomerative_from_SKLEARN
+```
+
+**Описание метода:**
+Agglomerative Clustering — иерархический алгоритм снизу вверх: каждая точка начинается как отдельный кластер, после чего ближайшие кластеры последовательно объединяются. Способ слияния задаётся параметром linkage (ward, complete, average, single). Число кластеров можно задать явно через `n_clusters` либо определить автоматически по порогу расстояния `distance_threshold`. Метод linkage `ward` работает только с евклидовой метрикой; при другом выборе метрика автоматически заменяется на `euclidean`. Для изображений выполняется выборка пикселей, а оставшиеся точки получают метки по ближайшему центроиду.
+
+**Сигнатура:**
+```python
+class sklearn.cluster.AgglomerativeClustering(
+    n_clusters=2, metric='euclidean', linkage='ward',
+    compute_full_tree='auto', distance_threshold=None, compute_distances=False
+)
+```
+
+**Параметры:**
+- **n_clusters** (*int*, по умолчанию 3): Желаемое количество кластеров. Игнорируется, если `distance_threshold` больше 0.
+
+- **linkage** (*str*, по умолчанию 'ward'): Метод объединения кластеров. Доступные варианты: 'ward' (минимизирует дисперсию, рекомендуется), 'complete' (максимальное расстояние), 'average' (среднее расстояние), 'single' (минимальное расстояние).
+
+- **metric** (*str*, по умолчанию 'euclidean'): Метрика расстояния. Доступные варианты: 'euclidean', 'manhattan', 'cosine', 'l1', 'l2', 'chebyshev'. Для `linkage='ward'` используется только 'euclidean'.
+
+- **compute_full_tree** (*str*, по умолчанию 'auto'): Строить ли полное дерево слияния. Доступные варианты: 'auto', 'true', 'false'. При использовании `distance_threshold` всегда строится полное дерево.
+
+- **distance_threshold** (*float*, по умолчанию 0.0): Порог расстояния для остановки слияния. Значение 0 означает, что используется `n_clusters`. Если значение больше 0, число кластеров определяется автоматически.
+
+- **compute_distances** (*bool*, по умолчанию False): Вычислять расстояния между узлами дерева слияния. На метки кластеров не влияет.
+
+- **normalize** (*bool*, по умолчанию True): Стандартизировать признаки перед кластеризацией.
+
+**Источник:** [Документация scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html) и `ClusteringMethods/AgglomerativeClustering.py`
+
+---
