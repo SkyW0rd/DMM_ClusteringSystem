@@ -35,6 +35,7 @@ DMM_ClusteringSystem/
 │   ├── test_wave.py                  # Тест WaveClustering
 │   ├── test_dbscan.py                # Тест DBSCAN
 │   ├── test_spectral_biclustering.py # Тест Spectral Biclustering
+│   ├── test_agglomerative.py         # Тест Agglomerative Clustering
 │   ├── test_template.py              # Шаблон для новых тестов
 │   │
 │   └── Images/                       # Директория для результатов
