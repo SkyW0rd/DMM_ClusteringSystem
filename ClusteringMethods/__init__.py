@@ -82,6 +82,16 @@ except ImportError as e:
     print(f"⚠️  AgglomerativeClustering (SKLearn) не загружен: {e}")
     print("   Убедитесь, что установлены: pip install scikit-learn numpy")
 
+# Импорт MeanShift
+try:
+    from ClusteringMethods.MeanShiftClustering import (
+        ConcreteStrategyMeanShift_from_SKLEARN
+    )
+    print("✅ MeanShift (SKLearn) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  MeanShift (SKLearn) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install scikit-learn numpy")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -98,4 +108,5 @@ __all__ = [
     'ConcreteStrategyKMeans_from_SKLEARN',
     'ConcreteStrategyMiniBatchKMeans_from_SKLEARN',
     'ConcreteStrategyAgglomerative_from_SKLEARN',
+    'ConcreteStrategyMeanShift_from_SKLEARN',
 ]

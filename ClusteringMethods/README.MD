@@ -700,3 +700,45 @@ class sklearn.cluster.AgglomerativeClustering(
 **Источник:** [Документация scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html) и `ClusteringMethods/AgglomerativeClustering.py`
 
 ---
+
+### 20. MeanShift (Кластеризация методом сдвига среднего)
+
+**Установка:**
+```bash
+python -m pip install scikit-learn
+```
+**Импорт:**
+```python
+from sklearn.cluster import MeanShift, estimate_bandwidth
+from ClusteringMethods.MeanShiftClustering import ConcreteStrategyMeanShift_from_SKLEARN
+```
+
+**Описание метода:**
+MeanShift — алгоритм, основанный на плотности: вокруг каждой точки строится окно радиуса `bandwidth`, и точка многократно сдвигается в среднее (центр масс) точек, попавших в окно. В результате все точки «сползают» к локальным максимумам плотности данных (модам). Точки, сошедшиеся в одну моду, образуют один кластер, поэтому число кластеров определяется автоматически. Если `bandwidth` равен 0, радиус оценивается функцией `estimate_bandwidth` по параметру `quantile`. Метод хорошо находит кластеры «округлой» формы, но плохо справляется с вложенными и вытянутыми структурами (moons, circles). Для изображений модель обучается на выборке пикселей, а остальные пиксели получают метку ближайшего найденного центра.
+
+**Сигнатура:**
+```python
+class sklearn.cluster.MeanShift(
+    bandwidth=None, seeds=None, bin_seeding=False,
+    min_bin_freq=1, cluster_all=True, n_jobs=None, max_iter=300
+)
+```
+
+**Параметры:**
+- **bandwidth** (*float*, по умолчанию 0.0): Радиус окна. Меньше радиус — больше мелких кластеров. Значение 0 означает автоматическую оценку по `quantile`.
+
+- **quantile** (*float*, по умолчанию 0.2): Квантиль попарных расстояний для автоматической оценки `bandwidth` (от 0 до 1). Рекомендуется 0.1–0.3.
+
+- **bin_seeding** (*bool*, по умолчанию False): Запускать сдвиги из узлов сетки, а не из каждой точки. Ускоряет работу на больших данных.
+
+- **min_bin_freq** (*int*, по умолчанию 1): Минимальное число точек в ячейке сетки, чтобы она стала стартовой. Используется только при `bin_seeding=True`.
+
+- **cluster_all** (*bool*, по умолчанию True): Если False, точки вне всех окон получают метку -1 (шум).
+
+- **max_iter** (*int*, по умолчанию 300): Максимальное число сдвигов для одной стартовой точки.
+
+- **normalize** (*bool*, по умолчанию True): Стандартизировать признаки перед кластеризацией.
+
+**Источник:** [Документация scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.MeanShift.html) и `ClusteringMethods/MeanShiftClustering.py`
+
+---
