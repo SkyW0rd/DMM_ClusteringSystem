@@ -830,3 +830,89 @@ class pyclustering.cluster.xmeans.xmeans(
 **Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/dd/db4/classpyclustering_1_1cluster_1_1xmeans_1_1xmeans.html) и `ClusteringMethods/XMeansClustering.py`
 
 ---
+
+### 23. MBSAS (Модифицированный базовый последовательный алгоритм)
+
+**Установка:**
+```bash
+python -m pip install pyclustering scikit-learn
+```
+**Импорт:**
+```python
+from pyclustering.cluster.mbsas import mbsas
+from ClusteringMethods.MBSASClustering import ConcreteStrategyMBSAS_from_PYCLUSTERING
+```
+
+**Описание метода:**
+MBSAS (Modified Basic Sequential Algorithmic Scheme) — последовательный алгоритм, который проходит по данным дважды. На первом проходе точки просматриваются по порядку: если расстояние от точки до ближайшего кластера больше порога `threshold` и лимит `maximum_clusters` не исчерпан, точка открывает новый кластер, остальные точки пропускаются. На втором проходе каждая пропущенная точка относится к ближайшему кластеру, а представитель кластера (среднее его точек) пересчитывается. Число кластеров определяется порогом. Результат зависит от порядка точек: кластеры открывают точки, встретившиеся раньше. Параметр `shuffle` позволяет перемешать точки перед обработкой. Порог измеряется в единицах расстояния, поэтому по умолчанию данные стандартизируются и порог задаётся в стандартных отклонениях. Если C++ часть pyclustering недоступна на платформе (например, macOS arm64), автоматически используется реализация на Python.
+
+**Сигнатура:**
+```python
+class pyclustering.cluster.mbsas.mbsas(
+    data, maximum_clusters, threshold, ccore=True, metric=distance_metric(type_metric.EUCLIDEAN)
+)
+```
+
+**Параметры:**
+- **maximum_clusters** (*int*, по умолчанию 10): Максимальное количество кластеров.
+
+- **threshold** (*float*, по умолчанию 1.0): Порог расстояния: точка дальше порога от всех кластеров открывает новый кластер. Меньше порог — больше кластеров. Рекомендуется 0.5–1.5.
+
+- **metric** (*str*, по умолчанию 'euclidean'): Метрика расстояния: 'euclidean', 'manhattan', 'chebyshev'.
+
+- **shuffle** (*bool*, по умолчанию False): Перемешать точки перед обработкой.
+
+- **random_state** (*int*, по умолчанию 42): Инициализация генератора случайных чисел для перемешивания.
+
+- **normalize** (*bool*, по умолчанию True): Стандартизировать признаки перед кластеризацией.
+
+- **ccore** (*bool*, по умолчанию True): Использовать C++ часть pyclustering. При ошибке загрузки используется Python-реализация.
+
+**Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/d4/d02/classpyclustering_1_1cluster_1_1mbsas_1_1mbsas.html) и `ClusteringMethods/MBSASClustering.py`
+
+---
+
+### 24. SOM (Самоорганизующаяся карта Кохонена)
+
+**Установка:**
+```bash
+python -m pip install pyclustering scikit-learn
+```
+**Импорт:**
+```python
+from pyclustering.nnet.som import som, som_parameters, type_conn, type_init
+from ClusteringMethods.SOMClustering import ConcreteStrategySOM_from_PYCLUSTERING
+```
+
+**Описание метода:**
+SOM (Self-Organizing Map) — нейронная сеть из нейронов, расположенных в узлах сетки `rows` x `cols`. У каждого нейрона есть вектор весов — точка в пространстве данных. При обучении для каждой точки находится нейрон-победитель с ближайшими весами, и веса победителя и его соседей по сетке сдвигаются в сторону точки; сила сдвига и радиус соседства уменьшаются с каждой эпохой. После обучения каждая точка относится к своему нейрону-победителю: один нейрон — один кластер. Число кластеров не превышает `rows * cols`; нейроны, не выигравшие ни одной точки («мёртвые» нейроны), в результат не попадают. Для обычной кластеризации удобно задавать `rows = 1`, а число кластеров — через `cols`. Для изображений сеть обучается на выборке пикселей, а все пиксели относятся к ближайшему нейрону. Если C++ часть pyclustering недоступна на платформе (например, macOS arm64), автоматически используется реализация на Python.
+
+**Сигнатура:**
+```python
+class pyclustering.nnet.som.som(
+    rows, cols, conn_type=type_conn.grid_eight, parameters=None, ccore=True
+)
+```
+
+**Параметры:**
+- **rows** (*int*, по умолчанию 1): Число строк сетки нейронов.
+
+- **cols** (*int*, по умолчанию 3): Число столбцов сетки нейронов. Максимальное число кластеров равно `rows * cols`.
+
+- **conn_type** (*str*, по умолчанию 'grid_eight'): Какие нейроны считаются соседями: 'grid_eight' (8 соседей), 'grid_four' (4 соседа), 'honeycomb' (6 соседей), 'func_neighbor' (по функции расстояния).
+
+- **init_type** (*str*, по умолчанию 'uniform_grid'): Начальное расположение весов: 'uniform_grid', 'random', 'random_centroid', 'random_surface'.
+
+- **epochs** (*int*, по умолчанию 100): Количество эпох обучения.
+
+- **learn_rate** (*float*, по умолчанию 0.1): Начальная скорость обучения.
+
+- **random_state** (*int*, по умолчанию 42): Инициализация генератора случайных чисел.
+
+- **normalize** (*bool*, по умолчанию True): Стандартизировать признаки перед кластеризацией.
+
+- **ccore** (*bool*, по умолчанию True): Использовать C++ часть pyclustering. При ошибке загрузки используется Python-реализация.
+
+**Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/d7/d2c/classpyclustering_1_1nnet_1_1som_1_1som.html) и `ClusteringMethods/SOMClustering.py`
+
+---

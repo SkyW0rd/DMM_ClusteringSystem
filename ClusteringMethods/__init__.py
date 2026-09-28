@@ -112,6 +112,26 @@ except ImportError as e:
     print(f"⚠️  X-Means (PyClustering) не загружен: {e}")
     print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
 
+# Импорт MBSAS
+try:
+    from ClusteringMethods.MBSASClustering import (
+        ConcreteStrategyMBSAS_from_PYCLUSTERING
+    )
+    print("✅ MBSAS (PyClustering) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  MBSAS (PyClustering) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
+
+# Импорт SOM
+try:
+    from ClusteringMethods.SOMClustering import (
+        ConcreteStrategySOM_from_PYCLUSTERING
+    )
+    print("✅ SOM (PyClustering) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  SOM (PyClustering) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -131,4 +151,6 @@ __all__ = [
     'ConcreteStrategyMeanShift_from_SKLEARN',
     'ConcreteStrategyKMedians_from_PYCLUSTERING',
     'ConcreteStrategyXMeans_from_PYCLUSTERING',
+    'ConcreteStrategyMBSAS_from_PYCLUSTERING',
+    'ConcreteStrategySOM_from_PYCLUSTERING',
 ]
