@@ -77,6 +77,11 @@ DMM_ClusteringSystem/
 │   ├── MiniBatchKMeansClustering.py
 │   ├── VPTreeClustering.py
 │   ├── AgglomerativeClustering.py
+│   ├── MeanShiftClustering.py
+│   ├── KMediansClustering.py
+│   ├── XMeansClustering.py
+│   ├── MBSASClustering.py
+│   ├── SOMClustering.py
 │   └── README.md               # Документация по методам
 │
 ├── AnalysisMethods/            # Методы анализа качества кластеризации
@@ -514,6 +519,7 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 | **Балыков Павел**                | HPStream Clustering                       | 📧 [p.balykov@gmail.com](mailto:p.balykov@gmail.com) |
 | **Мысин Юрий**                   | KMeans с PCA                              | 📧 [yuriymysin@yandex.ru](mailto:yuriymysin@yandex.ru) |
 | **Сидоров Данила**               | Разработка тестов, оптимизация алгоритмов | 📧 [sidorov.d.a1@edu.mirea.ru](mailto:sidorov.d.a1@edu.mirea.ru) |
+| **Собиров Тельман**              | MeanShift, K-Medians, X-Means, MBSAS, SOM | 📧 [tel9master@mail.ru](mailto:tel9master@mail.ru) |
 
 ---
 
@@ -559,6 +565,11 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 - **HPStream**: для высокомерных потоковых данных
 - **Spectral Clustering**: для невыпуклых кластеров, графовых данных
 - **Agglomerative Clustering**: для иерархического разбиения при известном или пороговом числе кластеров, небольших и средних выборок
+- **MeanShift**: когда число кластеров заранее неизвестно, а кластеры имеют «округлую» форму; число кластеров регулируется радиусом окна
+- **K-Medians**: как KMeans при известном числе кластеров, но когда в данных есть выбросы
+- **X-Means**: когда число кластеров неизвестно, а кластеры примерно круглые; сам подбирает число кластеров от `kmin` до `kmax`
+- **MBSAS**: для быстрой однопроходной кластеризации, когда известен характерный размер кластера (порог расстояния)
+- **SOM**: когда нужна нейросетевая кластеризация с сохранением соседства кластеров; число кластеров не больше размера сетки нейронов
 - **GMM**: для вероятностной кластеризации, перекрывающихся кластеров
 
 Подробное описание каждого метода и рекомендации: [`ClusteringMethods/README.md`](ClusteringMethods/README.md)

@@ -24,6 +24,11 @@ if __name__ == "__main__":
     # и получение информации о текущей теме
     app = QApplication(sys.argv)
     app.setStyle(QStyleFactory.create("Fusion"))
+    # Темы приложения светлые: принудительно используем светлую схему,
+    # иначе в тёмном режиме ОС (например, macOS) текст становится белым на белом фоне.
+    # setColorScheme доступен начиная с Qt 6.8.
+    if hasattr(app.styleHints(), "setColorScheme"):
+        app.styleHints().setColorScheme(Qt.ColorScheme.Light)
     [qAppStyle, current_theme] = loader_settings()
     mw = MainWindow(qAppStyle, current_theme)
     mw.show()

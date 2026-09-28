@@ -82,6 +82,56 @@ except ImportError as e:
     print(f"⚠️  AgglomerativeClustering (SKLearn) не загружен: {e}")
     print("   Убедитесь, что установлены: pip install scikit-learn numpy")
 
+# Импорт MeanShift
+try:
+    from ClusteringMethods.MeanShiftClustering import (
+        ConcreteStrategyMeanShift_from_SKLEARN
+    )
+    print("✅ MeanShift (SKLearn) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  MeanShift (SKLearn) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install scikit-learn numpy")
+
+# Импорт K-Medians
+try:
+    from ClusteringMethods.KMediansClustering import (
+        ConcreteStrategyKMedians_from_PYCLUSTERING
+    )
+    print("✅ K-Medians (PyClustering) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  K-Medians (PyClustering) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
+
+# Импорт X-Means
+try:
+    from ClusteringMethods.XMeansClustering import (
+        ConcreteStrategyXMeans_from_PYCLUSTERING
+    )
+    print("✅ X-Means (PyClustering) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  X-Means (PyClustering) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
+
+# Импорт MBSAS
+try:
+    from ClusteringMethods.MBSASClustering import (
+        ConcreteStrategyMBSAS_from_PYCLUSTERING
+    )
+    print("✅ MBSAS (PyClustering) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  MBSAS (PyClustering) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
+
+# Импорт SOM
+try:
+    from ClusteringMethods.SOMClustering import (
+        ConcreteStrategySOM_from_PYCLUSTERING
+    )
+    print("✅ SOM (PyClustering) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  SOM (PyClustering) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -98,4 +148,9 @@ __all__ = [
     'ConcreteStrategyKMeans_from_SKLEARN',
     'ConcreteStrategyMiniBatchKMeans_from_SKLEARN',
     'ConcreteStrategyAgglomerative_from_SKLEARN',
+    'ConcreteStrategyMeanShift_from_SKLEARN',
+    'ConcreteStrategyKMedians_from_PYCLUSTERING',
+    'ConcreteStrategyXMeans_from_PYCLUSTERING',
+    'ConcreteStrategyMBSAS_from_PYCLUSTERING',
+    'ConcreteStrategySOM_from_PYCLUSTERING',
 ]

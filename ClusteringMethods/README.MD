@@ -700,3 +700,219 @@ class sklearn.cluster.AgglomerativeClustering(
 **Источник:** [Документация scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html) и `ClusteringMethods/AgglomerativeClustering.py`
 
 ---
+
+### 20. MeanShift (Кластеризация методом сдвига среднего)
+
+**Установка:**
+```bash
+python -m pip install scikit-learn
+```
+**Импорт:**
+```python
+from sklearn.cluster import MeanShift, estimate_bandwidth
+from ClusteringMethods.MeanShiftClustering import ConcreteStrategyMeanShift_from_SKLEARN
+```
+
+**Описание метода:**
+MeanShift — алгоритм, основанный на плотности: вокруг каждой точки строится окно радиуса `bandwidth`, и точка многократно сдвигается в среднее (центр масс) точек, попавших в окно. В результате все точки «сползают» к локальным максимумам плотности данных (модам). Точки, сошедшиеся в одну моду, образуют один кластер, поэтому число кластеров определяется автоматически. Если `bandwidth` равен 0, радиус оценивается функцией `estimate_bandwidth` по параметру `quantile`. Метод хорошо находит кластеры «округлой» формы, но плохо справляется с вложенными и вытянутыми структурами (moons, circles). Для изображений модель обучается на выборке пикселей, а остальные пиксели получают метку ближайшего найденного центра.
+
+**Сигнатура:**
+```python
+class sklearn.cluster.MeanShift(
+    bandwidth=None, seeds=None, bin_seeding=False,
+    min_bin_freq=1, cluster_all=True, n_jobs=None, max_iter=300
+)
+```
+
+**Параметры:**
+- **bandwidth** (*float*, по умолчанию 0.0): Радиус окна. Меньше радиус — больше мелких кластеров. Значение 0 означает автоматическую оценку по `quantile`.
+
+- **quantile** (*float*, по умолчанию 0.2): Квантиль попарных расстояний для автоматической оценки `bandwidth` (от 0 до 1). Рекомендуется 0.1–0.3.
+
+- **bin_seeding** (*bool*, по умолчанию False): Запускать сдвиги из узлов сетки, а не из каждой точки. Ускоряет работу на больших данных.
+
+- **min_bin_freq** (*int*, по умолчанию 1): Минимальное число точек в ячейке сетки, чтобы она стала стартовой. Используется только при `bin_seeding=True`.
+
+- **cluster_all** (*bool*, по умолчанию True): Если False, точки вне всех окон получают метку -1 (шум).
+
+- **max_iter** (*int*, по умолчанию 300): Максимальное число сдвигов для одной стартовой точки.
+
+- **normalize** (*bool*, по умолчанию True): Стандартизировать признаки перед кластеризацией.
+
+**Источник:** [Документация scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.MeanShift.html) и `ClusteringMethods/MeanShiftClustering.py`
+
+---
+
+### 21. K-Medians (Кластеризация по медианам)
+
+**Установка:**
+```bash
+python -m pip install pyclustering scikit-learn
+```
+**Импорт:**
+```python
+from pyclustering.cluster.kmedians import kmedians
+from ClusteringMethods.KMediansClustering import ConcreteStrategyKMedians_from_PYCLUSTERING
+```
+
+**Описание метода:**
+K-Medians — вариант KMeans, в котором центр кластера вычисляется не как среднее, а как медиана по каждой координате. Алгоритм по очереди повторяет два шага: относит каждую точку к ближайшему центру и пересчитывает центры как медианы точек кластера, пока центры не перестанут сдвигаться (параметр `tolerance`). Медиана не смещается под влиянием отдельных далёких точек, поэтому метод устойчивее к выбросам, чем KMeans. Медиана минимизирует сумму манхэттенских расстояний, поэтому метрикой по умолчанию выбрана `manhattan`. Начальные центры выбираются через `sklearn.cluster.kmeans_plusplus`, так как инициализатор pyclustering несовместим с numpy >= 2. Если C++ часть pyclustering недоступна на платформе (например, macOS arm64), автоматически используется реализация на Python.
+
+**Сигнатура:**
+```python
+class pyclustering.cluster.kmedians.kmedians(
+    data, initial_medians, tolerance=0.001, ccore=True, metric=None, itermax=200
+)
+```
+
+**Параметры:**
+- **n_clusters** (*int*, по умолчанию 3): Количество кластеров.
+
+- **init** (*str*, по умолчанию 'k-means++'): Способ выбора начальных центров: 'k-means++' (центры далеко друг от друга) или 'random' (случайные точки выборки).
+
+- **metric** (*str*, по умолчанию 'manhattan'): Метрика расстояния. Доступные варианты: 'manhattan', 'euclidean', 'euclidean_square', 'chebyshev'.
+
+- **tolerance** (*float*, по умолчанию 0.001): Алгоритм останавливается, когда максимальный сдвиг центров меньше этого значения.
+
+- **itermax** (*int*, по умолчанию 200): Максимальное число итераций.
+
+- **random_state** (*int*, по умолчанию 42): Инициализация генератора случайных чисел.
+
+- **normalize** (*bool*, по умолчанию True): Стандартизировать признаки перед кластеризацией.
+
+- **ccore** (*bool*, по умолчанию True): Использовать C++ часть pyclustering. При ошибке загрузки используется Python-реализация.
+
+**Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/d0/d7a/classpyclustering_1_1cluster_1_1kmedians_1_1kmedians.html) и `ClusteringMethods/KMediansClustering.py`
+
+---
+
+### 22. X-Means (KMeans с автоматическим подбором числа кластеров)
+
+**Установка:**
+```bash
+python -m pip install pyclustering scikit-learn
+```
+**Импорт:**
+```python
+from pyclustering.cluster.xmeans import xmeans, splitting_type
+from ClusteringMethods.XMeansClustering import ConcreteStrategyXMeans_from_PYCLUSTERING
+```
+
+**Описание метода:**
+X-Means — расширение KMeans, которое само определяет число кластеров. Алгоритм начинает с `kmin` центров и повторяет два шага: запускает обычный KMeans, затем пробует разделить каждый кластер на два. Разделение сохраняется, только если оно улучшает критерий качества (BIC или MNDL): два кластера должны описывать данные заметно лучше одного с учётом «штрафа» за лишние параметры модели. Поиск останавливается, когда ни одно разделение не улучшает критерий или число кластеров достигло `kmax`. Критерии рассчитаны на круглые (сферические) кластеры одинакового разброса, поэтому вытянутые кластеры алгоритм дробит на части. По этой причине нормализация по умолчанию выключена: стандартизация сжимает оси по-разному и может сделать круглые кластеры вытянутыми. На фотографиях цвета распределены непрерывно, поэтому алгоритм обычно доходит до `kmax` — число цветовых групп стоит ограничивать этим параметром. Для совместимости pyclustering с numpy >= 2 атрибут `numpy.warnings` подменяется стандартным модулем `warnings`. Если C++ часть pyclustering недоступна на платформе (например, macOS arm64), автоматически используется реализация на Python.
+
+**Сигнатура:**
+```python
+class pyclustering.cluster.xmeans.xmeans(
+    data, initial_centers=None, kmax=20, tolerance=0.001,
+    criterion=splitting_type.BAYESIAN_INFORMATION_CRITERION, ccore=True,
+    repeat=1, random_state=None
+)
+```
+
+**Параметры:**
+- **kmin** (*int*, по умолчанию 2): Начальное количество кластеров, с которого начинается поиск.
+
+- **kmax** (*int*, по умолчанию 20): Максимальное количество кластеров.
+
+- **criterion** (*str*, по умолчанию 'bic'): Критерий разделения: 'bic' (байесовский информационный критерий, рекомендуется) или 'mndl' (минимальная длина описания без шума, обычно находит меньше кластеров).
+
+- **tolerance** (*float*, по умолчанию 0.001): Точность остановки внутреннего KMeans.
+
+- **repeat** (*int*, по умолчанию 1): Сколько раз запускать KMeans при попытке разделить кластер.
+
+- **random_state** (*int*, по умолчанию 42): Инициализация генератора случайных чисел.
+
+- **normalize** (*bool*, по умолчанию False): Стандартизировать признаки перед кластеризацией. Включайте только для признаков разного масштаба.
+
+- **ccore** (*bool*, по умолчанию True): Использовать C++ часть pyclustering. При ошибке загрузки используется Python-реализация.
+
+**Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/dd/db4/classpyclustering_1_1cluster_1_1xmeans_1_1xmeans.html) и `ClusteringMethods/XMeansClustering.py`
+
+---
+
+### 23. MBSAS (Модифицированный базовый последовательный алгоритм)
+
+**Установка:**
+```bash
+python -m pip install pyclustering scikit-learn
+```
+**Импорт:**
+```python
+from pyclustering.cluster.mbsas import mbsas
+from ClusteringMethods.MBSASClustering import ConcreteStrategyMBSAS_from_PYCLUSTERING
+```
+
+**Описание метода:**
+MBSAS (Modified Basic Sequential Algorithmic Scheme) — последовательный алгоритм, который проходит по данным дважды. На первом проходе точки просматриваются по порядку: если расстояние от точки до ближайшего кластера больше порога `threshold` и лимит `maximum_clusters` не исчерпан, точка открывает новый кластер, остальные точки пропускаются. На втором проходе каждая пропущенная точка относится к ближайшему кластеру, а представитель кластера (среднее его точек) пересчитывается. Число кластеров определяется порогом. Результат зависит от порядка точек: кластеры открывают точки, встретившиеся раньше. Параметр `shuffle` позволяет перемешать точки перед обработкой. Порог измеряется в единицах расстояния, поэтому по умолчанию данные стандартизируются и порог задаётся в стандартных отклонениях. Если C++ часть pyclustering недоступна на платформе (например, macOS arm64), автоматически используется реализация на Python.
+
+**Сигнатура:**
+```python
+class pyclustering.cluster.mbsas.mbsas(
+    data, maximum_clusters, threshold, ccore=True, metric=distance_metric(type_metric.EUCLIDEAN)
+)
+```
+
+**Параметры:**
+- **maximum_clusters** (*int*, по умолчанию 10): Максимальное количество кластеров.
+
+- **threshold** (*float*, по умолчанию 1.0): Порог расстояния: точка дальше порога от всех кластеров открывает новый кластер. Меньше порог — больше кластеров. Рекомендуется 0.5–1.5.
+
+- **metric** (*str*, по умолчанию 'euclidean'): Метрика расстояния: 'euclidean', 'manhattan', 'chebyshev'.
+
+- **shuffle** (*bool*, по умолчанию False): Перемешать точки перед обработкой.
+
+- **random_state** (*int*, по умолчанию 42): Инициализация генератора случайных чисел для перемешивания.
+
+- **normalize** (*bool*, по умолчанию True): Стандартизировать признаки перед кластеризацией.
+
+- **ccore** (*bool*, по умолчанию True): Использовать C++ часть pyclustering. При ошибке загрузки используется Python-реализация.
+
+**Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/d4/d02/classpyclustering_1_1cluster_1_1mbsas_1_1mbsas.html) и `ClusteringMethods/MBSASClustering.py`
+
+---
+
+### 24. SOM (Самоорганизующаяся карта Кохонена)
+
+**Установка:**
+```bash
+python -m pip install pyclustering scikit-learn
+```
+**Импорт:**
+```python
+from pyclustering.nnet.som import som, som_parameters, type_conn, type_init
+from ClusteringMethods.SOMClustering import ConcreteStrategySOM_from_PYCLUSTERING
+```
+
+**Описание метода:**
+SOM (Self-Organizing Map) — нейронная сеть из нейронов, расположенных в узлах сетки `rows` x `cols`. У каждого нейрона есть вектор весов — точка в пространстве данных. При обучении для каждой точки находится нейрон-победитель с ближайшими весами, и веса победителя и его соседей по сетке сдвигаются в сторону точки; сила сдвига и радиус соседства уменьшаются с каждой эпохой. После обучения каждая точка относится к своему нейрону-победителю: один нейрон — один кластер. Число кластеров не превышает `rows * cols`; нейроны, не выигравшие ни одной точки («мёртвые» нейроны), в результат не попадают. Для обычной кластеризации удобно задавать `rows = 1`, а число кластеров — через `cols`. Для изображений сеть обучается на выборке пикселей, а все пиксели относятся к ближайшему нейрону. Если C++ часть pyclustering недоступна на платформе (например, macOS arm64), автоматически используется реализация на Python.
+
+**Сигнатура:**
+```python
+class pyclustering.nnet.som.som(
+    rows, cols, conn_type=type_conn.grid_eight, parameters=None, ccore=True
+)
+```
+
+**Параметры:**
+- **rows** (*int*, по умолчанию 1): Число строк сетки нейронов.
+
+- **cols** (*int*, по умолчанию 3): Число столбцов сетки нейронов. Максимальное число кластеров равно `rows * cols`.
+
+- **conn_type** (*str*, по умолчанию 'grid_eight'): Какие нейроны считаются соседями: 'grid_eight' (8 соседей), 'grid_four' (4 соседа), 'honeycomb' (6 соседей), 'func_neighbor' (по функции расстояния).
+
+- **init_type** (*str*, по умолчанию 'uniform_grid'): Начальное расположение весов: 'uniform_grid', 'random', 'random_centroid', 'random_surface'.
+
+- **epochs** (*int*, по умолчанию 100): Количество эпох обучения.
+
+- **learn_rate** (*float*, по умолчанию 0.1): Начальная скорость обучения.
+
+- **random_state** (*int*, по умолчанию 42): Инициализация генератора случайных чисел.
+
+- **normalize** (*bool*, по умолчанию True): Стандартизировать признаки перед кластеризацией.
+
+- **ccore** (*bool*, по умолчанию True): Использовать C++ часть pyclustering. При ошибке загрузки используется Python-реализация.
+
+**Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/d7/d2c/classpyclustering_1_1nnet_1_1som_1_1som.html) и `ClusteringMethods/SOMClustering.py`
+
+---

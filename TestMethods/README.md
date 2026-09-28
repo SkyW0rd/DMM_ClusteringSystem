@@ -36,6 +36,11 @@ DMM_ClusteringSystem/
 │   ├── test_dbscan.py                # Тест DBSCAN
 │   ├── test_spectral_biclustering.py # Тест Spectral Biclustering
 │   ├── test_agglomerative.py         # Тест Agglomerative Clustering
+│   ├── test_meanshift.py             # Тест MeanShift
+│   ├── test_kmedians.py              # Тест K-Medians
+│   ├── test_xmeans.py                # Тест X-Means
+│   ├── test_mbsas.py                 # Тест MBSAS
+│   ├── test_som.py                   # Тест SOM
 │   ├── test_template.py              # Шаблон для новых тестов
 │   │
 │   └── Images/                       # Директория для результатов
