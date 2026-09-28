@@ -102,6 +102,16 @@ except ImportError as e:
     print(f"⚠️  K-Medians (PyClustering) не загружен: {e}")
     print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
 
+# Импорт X-Means
+try:
+    from ClusteringMethods.XMeansClustering import (
+        ConcreteStrategyXMeans_from_PYCLUSTERING
+    )
+    print("✅ X-Means (PyClustering) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  X-Means (PyClustering) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -120,4 +130,5 @@ __all__ = [
     'ConcreteStrategyAgglomerative_from_SKLEARN',
     'ConcreteStrategyMeanShift_from_SKLEARN',
     'ConcreteStrategyKMedians_from_PYCLUSTERING',
+    'ConcreteStrategyXMeans_from_PYCLUSTERING',
 ]

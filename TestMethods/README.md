@@ -38,6 +38,7 @@ DMM_ClusteringSystem/
 │   ├── test_agglomerative.py         # Тест Agglomerative Clustering
 │   ├── test_meanshift.py             # Тест MeanShift
 │   ├── test_kmedians.py              # Тест K-Medians
+│   ├── test_xmeans.py                # Тест X-Means
 │   ├── test_template.py              # Шаблон для новых тестов
 │   │
 │   └── Images/                       # Директория для результатов

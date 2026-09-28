@@ -785,3 +785,48 @@ class pyclustering.cluster.kmedians.kmedians(
 **Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/d0/d7a/classpyclustering_1_1cluster_1_1kmedians_1_1kmedians.html) и `ClusteringMethods/KMediansClustering.py`
 
 ---
+
+### 22. X-Means (KMeans с автоматическим подбором числа кластеров)
+
+**Установка:**
+```bash
+python -m pip install pyclustering scikit-learn
+```
+**Импорт:**
+```python
+from pyclustering.cluster.xmeans import xmeans, splitting_type
+from ClusteringMethods.XMeansClustering import ConcreteStrategyXMeans_from_PYCLUSTERING
+```
+
+**Описание метода:**
+X-Means — расширение KMeans, которое само определяет число кластеров. Алгоритм начинает с `kmin` центров и повторяет два шага: запускает обычный KMeans, затем пробует разделить каждый кластер на два. Разделение сохраняется, только если оно улучшает критерий качества (BIC или MNDL): два кластера должны описывать данные заметно лучше одного с учётом «штрафа» за лишние параметры модели. Поиск останавливается, когда ни одно разделение не улучшает критерий или число кластеров достигло `kmax`. Критерии рассчитаны на круглые (сферические) кластеры одинакового разброса, поэтому вытянутые кластеры алгоритм дробит на части. По этой причине нормализация по умолчанию выключена: стандартизация сжимает оси по-разному и может сделать круглые кластеры вытянутыми. На фотографиях цвета распределены непрерывно, поэтому алгоритм обычно доходит до `kmax` — число цветовых групп стоит ограничивать этим параметром. Для совместимости pyclustering с numpy >= 2 атрибут `numpy.warnings` подменяется стандартным модулем `warnings`. Если C++ часть pyclustering недоступна на платформе (например, macOS arm64), автоматически используется реализация на Python.
+
+**Сигнатура:**
+```python
+class pyclustering.cluster.xmeans.xmeans(
+    data, initial_centers=None, kmax=20, tolerance=0.001,
+    criterion=splitting_type.BAYESIAN_INFORMATION_CRITERION, ccore=True,
+    repeat=1, random_state=None
+)
+```
+
+**Параметры:**
+- **kmin** (*int*, по умолчанию 2): Начальное количество кластеров, с которого начинается поиск.
+
+- **kmax** (*int*, по умолчанию 20): Максимальное количество кластеров.
+
+- **criterion** (*str*, по умолчанию 'bic'): Критерий разделения: 'bic' (байесовский информационный критерий, рекомендуется) или 'mndl' (минимальная длина описания без шума, обычно находит меньше кластеров).
+
+- **tolerance** (*float*, по умолчанию 0.001): Точность остановки внутреннего KMeans.
+
+- **repeat** (*int*, по умолчанию 1): Сколько раз запускать KMeans при попытке разделить кластер.
+
+- **random_state** (*int*, по умолчанию 42): Инициализация генератора случайных чисел.
+
+- **normalize** (*bool*, по умолчанию False): Стандартизировать признаки перед кластеризацией. Включайте только для признаков разного масштаба.
+
+- **ccore** (*bool*, по умолчанию True): Использовать C++ часть pyclustering. При ошибке загрузки используется Python-реализация.
+
+**Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/dd/db4/classpyclustering_1_1cluster_1_1xmeans_1_1xmeans.html) и `ClusteringMethods/XMeansClustering.py`
+
+---
