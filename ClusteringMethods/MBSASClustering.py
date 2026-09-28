@@ -1,5 +1,6 @@
 """
 MBSAS Algorithm Implementation
+Автор: Собиров Тельман Темурович [tel9master@mail.ru]
 Последнее обновление: 2026-09-28
 
 Кластеризация методом MBSAS (Modified Basic Sequential Algorithmic Scheme)

@@ -1,5 +1,6 @@
 """
 MeanShift Algorithm Implementation
+Автор: Собиров Тельман Темурович [tel9master@mail.ru]
 Последнее обновление: 2026-09-26
 
 Кластеризация методом сдвига среднего (Mean Shift) на базе

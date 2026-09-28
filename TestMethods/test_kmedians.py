@@ -1,5 +1,6 @@
 """
 Тестовый скрипт для проверки K-Medians (PyClustering) с визуализацией
+Автор: Собиров Тельман Темурович [tel9master@mail.ru]
 """
 
 import os
