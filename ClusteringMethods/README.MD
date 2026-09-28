@@ -742,3 +742,46 @@ class sklearn.cluster.MeanShift(
 **Источник:** [Документация scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.MeanShift.html) и `ClusteringMethods/MeanShiftClustering.py`
 
 ---
+
+### 21. K-Medians (Кластеризация по медианам)
+
+**Установка:**
+```bash
+python -m pip install pyclustering scikit-learn
+```
+**Импорт:**
+```python
+from pyclustering.cluster.kmedians import kmedians
+from ClusteringMethods.KMediansClustering import ConcreteStrategyKMedians_from_PYCLUSTERING
+```
+
+**Описание метода:**
+K-Medians — вариант KMeans, в котором центр кластера вычисляется не как среднее, а как медиана по каждой координате. Алгоритм по очереди повторяет два шага: относит каждую точку к ближайшему центру и пересчитывает центры как медианы точек кластера, пока центры не перестанут сдвигаться (параметр `tolerance`). Медиана не смещается под влиянием отдельных далёких точек, поэтому метод устойчивее к выбросам, чем KMeans. Медиана минимизирует сумму манхэттенских расстояний, поэтому метрикой по умолчанию выбрана `manhattan`. Начальные центры выбираются через `sklearn.cluster.kmeans_plusplus`, так как инициализатор pyclustering несовместим с numpy >= 2. Если C++ часть pyclustering недоступна на платформе (например, macOS arm64), автоматически используется реализация на Python.
+
+**Сигнатура:**
+```python
+class pyclustering.cluster.kmedians.kmedians(
+    data, initial_medians, tolerance=0.001, ccore=True, metric=None, itermax=200
+)
+```
+
+**Параметры:**
+- **n_clusters** (*int*, по умолчанию 3): Количество кластеров.
+
+- **init** (*str*, по умолчанию 'k-means++'): Способ выбора начальных центров: 'k-means++' (центры далеко друг от друга) или 'random' (случайные точки выборки).
+
+- **metric** (*str*, по умолчанию 'manhattan'): Метрика расстояния. Доступные варианты: 'manhattan', 'euclidean', 'euclidean_square', 'chebyshev'.
+
+- **tolerance** (*float*, по умолчанию 0.001): Алгоритм останавливается, когда максимальный сдвиг центров меньше этого значения.
+
+- **itermax** (*int*, по умолчанию 200): Максимальное число итераций.
+
+- **random_state** (*int*, по умолчанию 42): Инициализация генератора случайных чисел.
+
+- **normalize** (*bool*, по умолчанию True): Стандартизировать признаки перед кластеризацией.
+
+- **ccore** (*bool*, по умолчанию True): Использовать C++ часть pyclustering. При ошибке загрузки используется Python-реализация.
+
+**Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/d0/d7a/classpyclustering_1_1cluster_1_1kmedians_1_1kmedians.html) и `ClusteringMethods/KMediansClustering.py`
+
+---
