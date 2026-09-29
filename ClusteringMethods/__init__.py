@@ -132,6 +132,26 @@ except ImportError as e:
     print(f"⚠️  SOM (PyClustering) не загружен: {e}")
     print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
 
+# Импорт CLIQUE
+try:
+    from ClusteringMethods.CliqueClustering import (
+        ConcreteStrategyCLIQUE
+    )
+    print("✅ CLIQUE (pyclustering) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  CLIQUE (pyclustering) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install pyclustering numpy")
+
+# Импорт CLARANS
+try:
+    from ClusteringMethods.ClaransClustering import (
+        ConcreteStrategyCLARANS
+    )
+    print("✅ CLARANS (pyclustering) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️  CLARANS (pyclustering) не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install pyclustering numpy")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -153,4 +173,6 @@ __all__ = [
     'ConcreteStrategyXMeans_from_PYCLUSTERING',
     'ConcreteStrategyMBSAS_from_PYCLUSTERING',
     'ConcreteStrategySOM_from_PYCLUSTERING',
+    'ConcreteStrategyCLIQUE',
+    'ConcreteStrategyCLARANS',
 ]
