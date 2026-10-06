@@ -506,6 +506,29 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 | **Козлов Алексей Игоревич** | Методы кластеризации, документация | 📧 [alex_kozlov15@mail.ru](mailto:alex_kozlov15@mail.ru) |
 | **Воронцов Павел Аркадьевич** | Разработка, тестирование | 📧 [exidna2002@yandex.ru](mailto:exidna2002@yandex.ru) |
 
+
+---
+
+### Фаза 3: Доработки задолженностей
+#### КММО-11-24 (задолженности)
+
+На этой фазе студенты, закрывавшие задолженности, дорабатывали проект в собственных форках. Затем их изменения были перенесены в основной репозиторий.
+
+| Автор | Роль/Вклад | Контакты |
+|-------|------------|----------|
+| **Голубятников Никита** | Fuzzy C-Means (scikit-fuzzy), примеры на датасетах, теоретическая документация, исправление `mainwindow.py` | 📧 [nikita.golubyatnikov02@gmail.com](mailto:nikita.golubyatnikov02@gmail.com) · [niikster](https://github.com/niikster/DMM_ClusteringSystem) |
+| **marksavv** | Spectral Clustering (scikit-learn) | 🐙 [marksavv](https://github.com/marksavv) |
+
+**Изменения фазы 3:**
+- Добавлен метод кластеризации **Fuzzy C-Means** (`fuzzy_cmeans`) в `ClusteringMethods/ClasteringAlgorithms.py`
+- Добавлены результаты работы Fuzzy C-Means на датасетах в `Examples/`
+- Добавлена статья `FCM-the_Fuzzy_C-Means_clustering-algorithm.pdf` в `Documentation/Theoretical documentation/`
+- Исправлена ошибка `SyntaxError: unterminated string literal` в `Frameworks_interface/mainwindow.py`
+- Добавлен метод кластеризации **Spectral Clustering**, позже интегрирован в основную ветку с нормализацией данных для изображений
+- В `requirements.txt` добавлена зависимость `scikit-fuzzy`
+
+---
+
 ---
 
 ### Фаза 4: Дальнейшее развитие
