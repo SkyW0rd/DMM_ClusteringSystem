@@ -473,7 +473,7 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 
 ### Руководство
 
-**Парфенов Дмитрий Викторович** — к.т.н., доцент  
+**Парфенов Денис Васильевич** — к.т.н., доцент  
 📧 [promasterden@yandex.ru](mailto:promasterden@yandex.ru)  
 🏛️ РТУ МИРЭА  
 *Научный руководитель проекта*
