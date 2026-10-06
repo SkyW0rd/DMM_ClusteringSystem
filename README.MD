@@ -529,8 +529,6 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 
 ---
 
----
-
 ### Фаза 4: Дальнейшее развитие
 #### КММО-11-25 и КММО-12-25
 
