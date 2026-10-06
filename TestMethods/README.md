@@ -41,6 +41,8 @@ DMM_ClusteringSystem/
 │   ├── test_xmeans.py                # Тест X-Means
 │   ├── test_mbsas.py                 # Тест MBSAS
 │   ├── test_som.py                   # Тест SOM
+│   ├── test_clique.py               # Тест CLIQUE
+│   ├── test_clarans.py              # Тест CLARANS
 │   ├── test_template.py              # Шаблон для новых тестов
 │   │
 │   └── Images/                       # Директория для результатов

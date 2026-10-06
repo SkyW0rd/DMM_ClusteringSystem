@@ -82,6 +82,8 @@ DMM_ClusteringSystem/
 │   ├── XMeansClustering.py
 │   ├── MBSASClustering.py
 │   ├── SOMClustering.py
+│   ├── CliqueClustering.py
+│   ├── ClaransClustering.py
 │   └── README.md               # Документация по методам
 │
 ├── AnalysisMethods/            # Методы анализа качества кластеризации
@@ -540,6 +542,8 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 | **Балыков Павел**                | HPStream Clustering                       | 📧 [p.balykov@gmail.com](mailto:p.balykov@gmail.com) |
 | **Мысин Юрий**                   | KMeans с PCA                              | 📧 [yuriymysin@yandex.ru](mailto:yuriymysin@yandex.ru) |
 | **Сидоров Данила**               | Разработка тестов, оптимизация алгоритмов | 📧 [sidorov.d.a1@edu.mirea.ru](mailto:sidorov.d.a1@edu.mirea.ru) |
+| **Собиров Тельман**              | MeanShift, K-Medians, X-Means, MBSAS, SOM | 📧 [tel9master@mail.ru](mailto:tel9master@mail.ru) |
+| **Кузнецов Сергей**              | CLIQUE, CLARANS                           | 📧 [sergeyk321@yandex.ru](mailto:sergeyk321@yandex.ru) |
 | **Собиров Тельман**              | MeanShift, K-Medians | 📧 [tel9master@mail.ru](mailto:tel9master@mail.ru) |
 | **Курбанов Рамазан**             | X-Means, MBSAS, SOM                       | 📧 [peressmit@mail.ru](mailto:peressmit@mail.ru) |
 | **Кузнецов Сергей**              | CLARANS, CLIQUE                           | 📧 [sergeyk321@yandex.ru](mailto:sergeyk321@yandex.ru) |
@@ -593,6 +597,8 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 - **X-Means**: когда число кластеров неизвестно, а кластеры примерно круглые; сам подбирает число кластеров от `kmin` до `kmax`
 - **MBSAS**: для быстрой однопроходной кластеризации, когда известен характерный размер кластера (порог расстояния)
 - **SOM**: когда нужна нейросетевая кластеризация с сохранением соседства кластеров; число кластеров не больше размера сетки нейронов
+- **CLIQUE**: когда нужна быстрая кластеризация на больших данных; метод разбиения пространства на сетку, не вычисляет расстояния между точками; плохо работает на данных с изогнутыми формами (moons, circles)
+- **CLARANS**: когда важна устойчивость к выбросам; использует реальные точки данных (медоиды) как центры кластеров; медленнее KMeans, но надёжнее при наличии шума
 - **GMM**: для вероятностной кластеризации, перекрывающихся кластеров
 
 Подробное описание каждого метода и рекомендации: [`ClusteringMethods/README.md`](ClusteringMethods/README.md)

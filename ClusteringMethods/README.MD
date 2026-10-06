@@ -916,3 +916,69 @@ class pyclustering.nnet.som.som(
 **Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/d7/d2c/classpyclustering_1_1nnet_1_1som_1_1som.html) и `ClusteringMethods/SOMClustering.py`
 
 ---
+
+### 25. CLIQUE (Кластеризация на основе сетки)
+
+**Установка:**
+```bash
+python -m pip install pyclustering numpy
+```
+**Импорт:**
+```python
+from pyclustering.cluster.clique import clique
+from ClusteringMethods.CliqueClustering import ConcreteStrategyCLIQUE
+```
+
+**Описание метода:**
+CLIQUE (CLustering In QUEst) — density-based grid-алгоритм кластеризации. Пространство данных разбивается на grid-ячейки по каждому измерению: каждое измерение делится на `amount_intervals` интервалов, образуя сетку. Для каждой ячейки подсчитывается количество точек. Ячейки, содержащие не менее `density_threshold` точек, считаются плотными; точки в разреженных ячейках помечаются как шум (метка -1). Смежные плотные ячейки (имеющие общую грань) объединяются в кластеры. Алгоритм не вычисляет расстояния между точками — только распределяет точки по ячейкам за один проход, что делает его самым быстрым density-based методом в системе (сложность O(n)). Хорошо работает на сферических кластерах (blobs), но плохо — на изогнутых формах (moons, circles), так как сетка разрезает их на прямоугольные фрагменты.
+
+**Сигнатура:**
+```python
+class pyclustering.cluster.clique.clique(
+    data, amount_intervals, density_threshold, **kwargs
+)
+```
+
+**Параметры:**
+- **amount_intervals** (*int*, по умолчанию 5): Количество интервалов в каждом измерении. Определяет granularity сетки: больше интервалов — мельче сетка, больше кластеров и больше шума.
+
+- **density_threshold** (*int*, по умолчанию 10): Минимальное количество точек в блоке сетки, чтобы точки не считались выбросами (шумом). Больше порог — больше точек помечаются как шум.
+
+- **ccore** (*bool*, по умолчанию True): Использовать C++ часть библиотеки pyclustering для обработки. Автоматически отключается, если C++ ядро недоступно.
+
+**Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/d2/dcc/classpyclustering_1_1cluster_1_1clique_1_1clique.html) и `ClusteringMethods/CliqueClustering.py`
+
+---
+
+### 26. CLARANS (Кластеризация на основе случайного поиска)
+
+**Установка:**
+```bash
+python -m pip install pyclustering numpy
+```
+**Импорт:**
+```python
+from pyclustering.cluster.clarans import clarans
+from ClusteringMethods.ClaransClustering import ConcreteStrategyCLARANS
+```
+
+**Описание метода:**
+CLARANS (Clustering Large Applications based on RANdomized Search) — алгоритм кластеризации на основе K-Medoids с randomized search. В отличие от K-Means, где центром кластера является вычисленный центроид (среднее арифметическое), CLARANS использует медоиды — реальные точки данных как центры кластеров. Это делает алгоритм устойчивым к выбросам: выброс не искажает медоид, так как медоид является фактической точкой из данных. Алгоритм случайно выбирает начальные медоиды, затем итеративно заменяет случайный медоид на случайную не-медоидную точку: если замена уменьшает общую стоимость (сумму расстояний от точек до их медоидов), она принимается. Процесс повторяется `numlocal` раз с разными начальными конфигурациями, каждый раз проверяя до `maxneighbor` соседей. Чем больше `numlocal` и `maxneighbor`, тем точнее результат, но тем медленнее работа. Сложность O(n²·k·numlocal·maxneighbor) — медленнее K-Means, но надёжнее при наличии шума и выбросов. Шум не выделяется (все точки относятся к какому-либо кластеру).
+
+**Сигнатура:**
+```python
+class pyclustering.cluster.clarans.clarans(
+    data, number_clusters, numlocal, maxneighbor
+)
+```
+
+**Параметры:**
+- **number_clusters** (*int*, по умолчанию 3): Количество кластеров (медоидов) для выделения. Алгоритм ищет указанное количество оптимальных медоидов.
+
+- **numlocal** (*int*, по умолчанию 2): Количество локальных минимумов для поиска (amount of iterations for solving the problem). Больше значений — лучше результат, но медленнее. Рекомендуется: 2–4.
+
+- **maxneighbor** (*int*, по умолчанию 5): Максимальное количество соседей для проверки за одну итерацию. Чем больше, тем ближе CLARANS к K-Medoids (точнее, но дольше каждый поиск локального минимума). Рекомендуется: 3–8. При значениях больше 10 на больших данных возможны длительные задержки.
+
+**Источник:** [Документация pyclustering](https://pyclustering.github.io/docs/0.10.1/html/d6/d1f/classpyclustering_1_1cluster_1_1clarans_1_1clarans.html) и `ClusteringMethods/ClaransClustering.py`
+
+---
