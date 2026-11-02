@@ -1,5 +1,6 @@
 """
 AgglomerativeClustering Algorithm Implementation
+Авторы: Гайдин Эрик [erickgaydin.job@yandex.ru]
 Последнее обновление: 2026-09-13
 
 Иерархическая агломеративная кластеризация на базе
