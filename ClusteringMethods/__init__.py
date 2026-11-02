@@ -168,6 +168,17 @@ except ImportError as e:
     print(f"⚠️ FCM (PyClustering) не загружен: {e}")
     print("   Убедитесь, что установлены: pip install pyclustering scikit-learn numpy")
 
+# Импорт DenStream
+try:
+    from ClusteringMethods.DenStreamClustering import (
+        ConcreteStrategyDENSTREAM,
+        DenStreamClustering
+    )
+    print("✅ DenStreamClustering успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️ DenClustering не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install denstream")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -194,4 +205,6 @@ __all__ = [
     'DENCLUE',
     'ConcreteStrategyDENCLUE',
     'ConcreteStrategyFCM_from_PYCLUSTERING',
+    'DenStreamClustering',
+    'ConcreteStrategyDENSTREAM'
 ]
