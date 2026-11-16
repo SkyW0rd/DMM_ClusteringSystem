@@ -179,6 +179,14 @@ except ImportError as e:
     print(f"⚠️ DenClustering не загружен: {e}")
     print("   Убедитесь, что установлены: pip install denstream")
 
+# Импорт PROCLUS
+try:
+    from ClusteringMethods.PROCLUSClustering import PROCLUS, ConcreteStrategyPROCLUS
+    print("✅ PROCLUS успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️ PROCLUS не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install numpy scikit-learn")
+
 # Экспортируем все
 __all__ = [
     'Strategy',
@@ -206,5 +214,7 @@ __all__ = [
     'ConcreteStrategyDENCLUE',
     'ConcreteStrategyFCM_from_PYCLUSTERING',
     'DenStreamClustering',
-    'ConcreteStrategyDENSTREAM'
+    'ConcreteStrategyDENSTREAM',
+    'PROCLUS',
+    'ConcreteStrategyPROCLUS'
 ]

@@ -87,6 +87,7 @@ DMM_ClusteringSystem/
 │   ├── DENCLUEClustering.py
 │   ├── FCMClustering.py
 │   ├── DenStreamClustering.py
+│   ├── PROCLUSClustering.py
 │   └── README.md               # Документация по методам
 │
 ├── AnalysisMethods/            # Методы анализа качества кластеризации
@@ -367,6 +368,10 @@ python TestMethods/test_denclue.py
 # Тест FCM (PyClustering)
 python TestMethods/test_fcm_pyc.py
 
+# Тест PROCLUS
+python TestMethods/test_proclus.py --no-show
+python -m unittest TestMethods.test_proclus_regression
+
 # Тест других алгоритмов
 python TestMethods/test_*.py
 ```
@@ -556,6 +561,7 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 | **Курбанов Рамазан**             | X-Means, MBSAS, SOM                       | 📧 [peressmit@mail.ru](mailto:peressmit@mail.ru) |
 | **Кузнецов Сергей**              | CLARANS, CLIQUE                           | 📧 [sergeyk321@yandex.ru](mailto:sergeyk321@yandex.ru) |
 | **Пантелеев Артём** | DENCLUE, расширенный FCM (PyClustering), тесты и документация | 🐙 [ArtemPanteleev](https://github.com/ArtemPanteleev) |
+| **Мизюрин С. В.** | PROCLUS | 📧 [mizyurinsv@gmail.com](mailto:mizyurinsv@gmail.com) |
 
 ---
 
@@ -611,6 +617,7 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 - **CLARANS**: когда важна устойчивость к выбросам; использует реальные точки данных (медоиды) как центры кластеров; медленнее KMeans, но надёжнее при наличии шума
 - **DENCLUE**: для кластеризации по плотности с выделением шума на небольших выборках
 - **FCM (PyClustering)**: для нечёткой кластеризации с выбором инициализации и нормализации
+- **PROCLUS**: для многомерных данных, где кластеры компактны лишь в части признаков, известно число кластеров k и примерное число значимых признаков l
 - **GMM**: для вероятностной кластеризации, перекрывающихся кластеров
 
 Подробное описание каждого метода и рекомендации: [`ClusteringMethods/README.md`](ClusteringMethods/README.md)
