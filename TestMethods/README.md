@@ -46,6 +46,8 @@ DMM_ClusteringSystem/
 │   ├── test_denclue.py               # Тест DENCLUE
 │   ├── test_fcm_pyc.py               # Тест FCM (PyClustering)
 │   ├── test_denclue_fcm_regression.py # Регрессионные тесты DENCLUE и FCM
+│   ├── test_proclus.py               # Тест PROCLUS
+│   ├── test_proclus_regression.py    # Регрессионные тесты PROCLUS
 │   ├── test_template.py              # Шаблон для новых тестов
 │   │
 │   └── Images/                       # Директория для результатов
@@ -101,6 +103,10 @@ python TestMethods/test_fcm_pyc.py --no-show
 
 # Регрессионные тесты DENCLUE и FCM
 python -m unittest TestMethods.test_denclue_fcm_regression -v
+
+# Тест PROCLUS
+python TestMethods/test_proclus.py --no-show
+python -m unittest TestMethods.test_proclus_regression -v
 ```
 
 Для `test_denclue.py` и `test_fcm_pyc.py` флаг `--no-show` отключает показ окон.
