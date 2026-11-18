@@ -26,7 +26,7 @@
 
 ### Основные возможности
 
-- **18+ алгоритмов кластеризации** из различных библиотек (scikit-learn, pyclustering) и собственные реализации
+- **30 стратегий кластеризации** из различных библиотек (scikit-learn, pyclustering) и собственные реализации
 - **Графический интерфейс** для удобной настройки параметров и визуализации результатов
 - **Гибкая архитектура** на основе паттерна Strategy, позволяющая легко добавлять новые методы
 - **Поддержка различных типов данных**: точки в многомерном пространстве, изображения, синтетические датасеты
@@ -74,6 +74,7 @@ DMM_ClusteringSystem/
 │   ├── BallTreeClustering.py
 │   ├── HPStreamClasteringAlgorithm.py
 │   ├── KMeansClustering.py
+│   ├── SphericalKMeansClustering.py
 │   ├── MiniBatchKMeansClustering.py
 │   ├── VPTreeClustering.py
 │   ├── AgglomerativeClustering.py
@@ -556,6 +557,7 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 | **Курбанов Рамазан**             | X-Means, MBSAS, SOM                       | 📧 [peressmit@mail.ru](mailto:peressmit@mail.ru) |
 | **Кузнецов Сергей**              | CLARANS, CLIQUE                           | 📧 [sergeyk321@yandex.ru](mailto:sergeyk321@yandex.ru) |
 | **Пантелеев Артём** | DENCLUE, расширенный FCM (PyClustering), тесты и документация | 🐙 [ArtemPanteleev](https://github.com/ArtemPanteleev) |
+| **Кулаков Никита** | Spherical K-Means, тесты и документация | 🐙 [NikitaDestroyer](https://github.com/NikitaDestroyer) |
 
 ---
 
@@ -595,6 +597,7 @@ moons_data, moons_labels = make_moons(n_samples=300, noise=0.1)
 
 **Ответ:** Выбор зависит от характеристик данных:
 
+- **Spherical K-Means** подходит для эмбеддингов и косинусного сходства. В GUI он доступен как `Spherical K-Means (NumPy)`, ID `spherical_kmeans`. [Параметры и пример API](ClusteringMethods/README.MD#30-spherical-k-means).
 - **KMeans / MiniBatchKMeans**: для данных с известным количеством кластеров, сферической формы, больших объемов
 - **DBSCAN / HDBSCAN**: для данных с неизвестным количеством кластеров, произвольной формы, с шумом
 - **WaveClustering**: для данных с кластерами различного масштаба, пространственной структуры

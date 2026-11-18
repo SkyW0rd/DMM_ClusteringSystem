@@ -62,6 +62,17 @@ except ImportError as e:
     print(f"⚠️  KMeans (SKLearn) не загружен: {e}")
     print("   Убедитесь, что установлены: pip install scikit-learn numpy")
 
+# Импорт Spherical K-Means
+try:
+    from ClusteringMethods.SphericalKMeansClustering import (
+        SphericalKMeans,
+        ConcreteStrategySphericalKMeans
+    )
+    print("✅ Spherical K-Means (NumPy) успешно загружен и зарегистрирован!")
+except ImportError as e:
+    print(f"⚠️ Spherical K-Means не загружен: {e}")
+    print("   Убедитесь, что установлены: pip install numpy scikit-learn")
+
 # Импорт MiniBatchKMeans
 try:
     from ClusteringMethods.MiniBatchKMeansClustering import (
@@ -193,6 +204,8 @@ __all__ = [
     'ConcreteStrategyHPStream',
     'HPStreamClustering',
     'ConcreteStrategyKMeans_from_SKLEARN',
+    'SphericalKMeans',
+    'ConcreteStrategySphericalKMeans',
     'ConcreteStrategyMiniBatchKMeans_from_SKLEARN',
     'ConcreteStrategyAgglomerative_from_SKLEARN',
     'ConcreteStrategyMeanShift_from_SKLEARN',

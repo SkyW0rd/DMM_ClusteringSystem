@@ -45,6 +45,7 @@ DMM_ClusteringSystem/
 │   ├── test_clarans.py              # Тест CLARANS
 │   ├── test_denclue.py               # Тест DENCLUE
 │   ├── test_fcm_pyc.py               # Тест FCM (PyClustering)
+│   ├── test_spherical_kmeans.py      # Spherical K-Means, проверки и визуализации
 │   ├── test_denclue_fcm_regression.py # Регрессионные тесты DENCLUE и FCM
 │   ├── test_template.py              # Шаблон для новых тестов
 │   │
@@ -665,6 +666,26 @@ plt.savefig(IMAGES_DIR / "comparison.png", dpi=150, bbox_inches='tight')
 4. Проверьте, что ID стратегии в `StrategiesManager` соответствует используемому в тесте
 
 ## Важные Замечания
+
+### Spherical K-Means
+
+Запуск проверок и сохранение пяти графиков в `TestMethods/Images/SphericalKMeans/`
+
+```bash
+python TestMethods/test_spherical_kmeans.py --no-show
+```
+
+Для интерактивного просмотра графиков запустите скрипт без `--no-show`.
+Отдельный запуск автоматических проверок доступен через стандартный unittest
+
+```bash
+python -m unittest TestMethods.test_spherical_kmeans -v
+```
+
+Проверяются 2D- и 3D-кластеры, 128-мерные эмбеддинги, единичные центроиды,
+инвариантность к положительному масштабированию строк, нулевые векторы,
+повторяющиеся направления, пустые кластеры, лимит итераций, блочные вычисления,
+воспроизводимость и вызовы через реестр, Context и обработчик изображений.
 
 ### Стандартизация Тестов
 
